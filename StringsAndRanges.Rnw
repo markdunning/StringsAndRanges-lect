@@ -303,7 +303,7 @@ translate(myseq[1:4,])
 
 \begin{frame}[fragile]{The genome as a string - BSGenome}
 
-<<>>=
+<<message=FALSE,warning=FALSE>>=
 library(BSgenome)
 head(available.genomes())
 available.genomes()[23:25]
@@ -528,7 +528,7 @@ start and end position
 
 \begin{frame}[fragile]
 Suppose we want to capture information on the following intervals
-<<echo=FALSE>>=
+<<echo=FALSE,message=FALSE,warning=FALSE>>=
 library(ggbio)
 ir <- IRanges(start = c(7,9,12,14,22:24), 
               end=c(15,11,12,18,26,27,28))
@@ -620,7 +620,7 @@ ir
 shift(ir, 5)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=2,message=FALSE>>=
 p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)
 p2
 tracks(pl, p2)
@@ -776,7 +776,7 @@ ir3 <- IRanges(start = c(1, 14, 27), end = c(13,
 ir3
 @
 
-<<echo=FALSE,fig.height=4>>=
+<<echo=FALSE,fig.height=2>>=
 p2 <- autoplot(ir) + xlim(5,40)
 tracks(pl,p2)
 @
@@ -811,8 +811,6 @@ subject[subjectHits(ov)]
 <<echo=FALSE,fig.height=2>>=
 pl2 <- autoplot(ir3)
 p2 <- autoplot(unique(query[queryHits(ov)]),fill=brewer.pal(n=length(ir),"Set1")[-5])
-
-p2
 tracks(pl, pl2, p2)
 @
 Can make the overlap more stringent
