@@ -755,7 +755,7 @@ as.vector(cvg[1:12])
 
 \begin{frame}[fragile]
 <<echo=FALSE,fig.height=2>>=
-p2 <- autoplot(cvg) + xlim(5,40)
+p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
 tracks(pl,autoplot(cvg))
 @
 \end{frame}
