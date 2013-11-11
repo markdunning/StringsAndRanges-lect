@@ -68,11 +68,11 @@ set.seed(0)
 
 @
 
-<<echo=FALSE,out.width=10,comment=NA>>=
+<<echo=FALSE,out.width=10,comment=NA,message=FALSE>>=
 suppressPackageStartupMessages(library(GeneticsHTSCourse2013))
 suppressPackageStartupMessages(library(GenomicRanges))
 gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
-bam.sub2 <- readGappedAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
+bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
 
 for(i in 1:6){
 cat(paste("Read",i,"\n"))
@@ -95,7 +95,7 @@ suppressPackageStartupMessages(library(Gviz))
 suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg18))
 
 gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
-bam.sub2 <- readGappedAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
+bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
 
 reads <- lapply(1:6, function(x) AnnotationTrack(GRanges("chr21", IRanges(start(bam.sub2[x]),end(bam.sub2[x]))),name=paste("Read",x,sep="")))
 strack <- SequenceTrack(Hsapiens, chromosome = "chr21",name="Genome")
@@ -505,8 +505,7 @@ aln
 <<>>=
 sread(fq)[2]
 getSeq(hg19, "chr1", 249066163, 249066197)
-identical(as.character(sread(fq)[2]), as.character(getSeq(hg19,
-    "chr1", 249066163, 249066197)))
+identical(as.character(sread(fq)[2]), as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
 @
 We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
 \end{frame}
@@ -617,12 +616,11 @@ ir
 @
 \column{.5\textwidth}
 <<>>=
-shift(ir, 5)
+shift(ir, 5)+geom_vline(x=seq(1,40,by=1),lty=2)
 @
 \end{columns}
 <<echo=FALSE,fig.height=2,message=FALSE>>=
-p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)
-p2
+p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
 tracks(pl, p2)
 @
 \end{frame}
@@ -663,7 +661,7 @@ resize(ir,3)
 @
 \end{columns}
 <<echo=FALSE,fig.height=2>>=
-p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)
+p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 @
 \end{frame}
@@ -680,7 +678,7 @@ resize(ir,3,fix="end")
 @
 \end{columns}
 <<echo=FALSE,fig.height=2>>=
-p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)
+p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 @
 \end{frame}
@@ -756,7 +754,7 @@ as.vector(cvg[1:12])
 \begin{frame}[fragile]
 <<echo=FALSE,fig.height=2>>=
 p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
-tracks(pl,autoplot(cvg))
+tracks(pl,p2)
 @
 \end{frame}
 
@@ -1035,7 +1033,7 @@ options(width=60)
 @
 
 <<>>=
-bam <- readGappedAlignments(mybam,use.name=TRUE)
+bam <- readGAlignments(mybam,use.name=TRUE)
 @
 
 \end{frame}
@@ -1128,7 +1126,7 @@ quicker still, we can get the reads directly from the bam file. The region to be
 
 <<>>=
 system.time(bam.sub <-
-readGappedAlignments(file=mybam,
+readGAlignments(file=mybam,
 use.names=TRUE, 
 param=ScanBamParam(which=gr)))
 
