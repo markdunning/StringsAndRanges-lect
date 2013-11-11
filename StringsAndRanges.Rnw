@@ -430,6 +430,9 @@ Phred quality scores are integers from 0 to 50 that are stored as ASCII characte
 phred <- 1:9
 phreda <- paste(sapply(as.raw((phred)+33), rawToChar), collapse=""); phreda
 as.integer(charToRaw(phreda))-33
+round(10^((-(as.integer(charToRaw(phreda))-33)/10)),2)
+
+
 @
 
 \end{frame}
@@ -619,7 +622,7 @@ ir
 shift(ir, 5)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2,message=FALSE>>=
+<<echo=FALSE,fig.height=2.5,message=FALSE>>=
 p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
 tracks(pl, p2)
 @
@@ -640,8 +643,8 @@ ir
 shift(ir, 7:1)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
-p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1"))+geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
 tracks(pl, p2)
 
 @
@@ -660,7 +663,7 @@ ir
 resize(ir,3)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=2.5>>=
 p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 @
@@ -677,7 +680,7 @@ ir
 resize(ir,3,fix="end")
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=2.5>>=
 p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 @
@@ -694,7 +697,7 @@ ir
 reduce(ir)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=3>>=
 p2 <- autoplot(reduce(ir)) + xlim(5,40)
 tracks(pl, p2)
 @
@@ -713,7 +716,7 @@ ir
 gaps(ir)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=2.5>>=
 p2 <- autoplot(gaps(ir)) + xlim(5,40)
 tracks(pl, p2)
 @
@@ -731,7 +734,7 @@ ir
 flank(ir,2)
 @
 \end{columns}
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=2.5>>=
 p2 <- autoplot(flank(ir,2)) + xlim(5,40)
 tracks(pl, p2)
 @
@@ -774,7 +777,7 @@ ir3 <- IRanges(start = c(1, 14, 27), end = c(13,
 ir3
 @
 
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=3>>=
 p2 <- autoplot(ir3) + xlim(5,40)
 tracks(pl,p2)
 @
@@ -1038,11 +1041,19 @@ bam <- readGAlignments(mybam,use.name=TRUE)
 
 \end{frame}
 
-\begin{frame}[fragile]{Example bam file}
+\begin{frame}[fragile]{Useful links}
+Definiton of the bam / sam format
+\href{http://samtools.sourceforge.net/SAMv1.pdf}{\color{blue}{\tt http://samtools.sourceforge.net/SAMv1.pdf}}
 
-{\tt http://samtools.sourceforge.net/SAMv1.pdf}
-{\tt http://picard.sourceforge.net/explain-flags.html}
-{\tt http://www.illumina.com/truseq/tru\_resources/datasets.ilmn}
+Explanation of the bam flags
+
+\href{http://picard.sourceforge.net/explain-flags.html}{\color{blue}{\tt http://picard.sourceforge.net/explain-flags.html}}\\
+Some example files to play with
+
+\href{http://www.illumina.com/truseq/tru_resources/datasets.ilmn}{\color{blue}{\tt http://www.illumina.com/truseq/tru\_resources/datasets.ilmn}}\\
+IGV Genome browser\\
+\href{http://www.broadinstitute.org/igv/}{\color{blue}{\tt http://www.broadinstitute.org/igv/}}
+
 \end{frame}
 
 
