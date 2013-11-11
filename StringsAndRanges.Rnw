@@ -43,21 +43,21 @@ By the end of this lecture and practical you should be familiar with
 
 \section{Introduction}
 
-\begin{frame}{Previously....}
-\begin{itemize}
-\item{Whistle-stop tour of sequencing.}
-\begin{itemize}
-\item fastq
-\item bam
-\end{itemize}
-\item{Recap of R and Bioconductor}
-\begin{itemize}
-\item Vectors, data.frames, lists
-\item Functions
-\item How to get help
-\end{itemize}
-\end{itemize}
-\end{frame}
+%%\begin{frame}{Previously....}
+%%\begin{itemize}
+%%\item{Whistle-stop tour of sequencing.}
+%%\begin{itemize}
+%%\item fastq
+%%\item bam
+%%\end{itemize}
+%%\item{Recap of R and Bioconductor}
+%%\begin{itemize}
+%%\item Vectors, data.frames, lists
+%%\item Functions
+%%\item How to get help
+%5\end{itemize}
+%%\end{itemize}
+%%\end{frame}
 
 \begin{frame}[fragile]{Introduction}
 Sequencing produces millions of reads. e.g in fastq format
@@ -299,7 +299,7 @@ translate(myseq[1:4,])
 @
 \end{frame}
 
-\subsection{Representing reads}
+\subsection{Representing the genome}
 
 \begin{frame}[fragile]{The genome as a string - BSGenome}
 
@@ -616,7 +616,7 @@ ir
 @
 \column{.5\textwidth}
 <<>>=
-shift(ir, 5)+geom_vline(x=seq(1,40,by=1),lty=2)
+shift(ir, 5)
 @
 \end{columns}
 <<echo=FALSE,fig.height=2,message=FALSE>>=
@@ -752,7 +752,7 @@ as.vector(cvg[1:12])
 \end{frame}
 
 \begin{frame}[fragile]
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=6>>=
 p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
 tracks(pl,p2)
 @
@@ -775,7 +775,7 @@ ir3
 @
 
 <<echo=FALSE,fig.height=2>>=
-p2 <- autoplot(ir) + xlim(5,40)
+p2 <- autoplot(ir3) + xlim(5,40)
 tracks(pl,p2)
 @
 
@@ -806,7 +806,7 @@ subject[subjectHits(ov)]
 
 \begin{frame}[fragile]
 
-<<echo=FALSE,fig.height=2>>=
+<<echo=FALSE,fig.height=4>>=
 pl2 <- autoplot(ir3)
 p2 <- autoplot(unique(query[queryHits(ov)]),fill=brewer.pal(n=length(ir),"Set1")[-5])
 tracks(pl, pl2, p2)
@@ -1038,7 +1038,12 @@ bam <- readGAlignments(mybam,use.name=TRUE)
 
 \end{frame}
 
+\begin{frame}[fragile]{Example bam file}
 
+{\tt http://samtools.sourceforge.net/SAMv1.pdf}
+{\tt http://picard.sourceforge.net/explain-flags.html}
+{\tt http://www.illumina.com/truseq/tru\_resources/datasets.ilmn}
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -1145,12 +1150,12 @@ param=ScanBamParam(which=gr)))
 \end{itemize} 
 \end{frame}
 
-\begin{frame}{To be continued...}
-\begin{itemize}
-\item{Tomorrow, we will go through an RNA-seq analysis workflow}
-\item{We will then look how to relate the regions of interest back to the genome}
-\end{itemize}
-\end{frame}
+%%\begin{frame}{To be continued...}
+%%\begin{itemize}
+%%\item{Tomorrow, we will go through an RNA-seq analysis workflow}
+%%\item{We will then look how to relate the regions of interest back to the genome}
+%%\end{itemize}
+%%\end{frame}
 
 
 
