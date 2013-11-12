@@ -1,0 +1,1292 @@
+% this is a simplified version of 
+% https://github.com/yihui/knitr/blob/master/inst/examples/knitr-beamer.Rnw
+\documentclass{beamer}
+\ifdefined\knitrout
+  \renewenvironment{knitrout}{\begin{footnotesize}}{\end{footnotesize}}
+\else
+\fi
+\usepackage{ifthen} 
+\newboolean{includethis} 
+\setboolean{includethis}{false} 
+\newcommand{\ifinclude}[1]{\ifthenelse{\boolean{includethis}}{#1}{}} 
+
+\begin{document}
+
+
+\title{Strings and Ranges in R and Bioconductor}
+\author{Mark Dunning}
+\institute[Bioinformatics Core] % (optional, but mostly needed)
+{
+
+  Cancer Research Uk\\
+  Cambridge Research Institute\\
+  Robinson Way\\
+  Cambridge \\
+}
+
+% very important to use option [fragile] for frames containing code output!
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+  % You might wish to add the option [pausesections]
+\end{frame}
+
+\section{Aims}
+\begin{frame}{Aims}
+Bridge the gap between technical description of sequencing (Rory) and application-specific discussion (Ernest)
+\begin{itemize}
+\item{How DNA sequences are represented in R}
+\item{How to create and compare genomic intervals}
+\item{How to read fastq and bam files into R}
+\item{Interactions between the packages}
+\end{itemize}
+\end{frame}
+
+\section{Recap}
+
+%%\begin{frame}{Previously....}
+%%\begin{itemize}
+%%\item{Whistle-stop tour of sequencing.}
+%%\begin{itemize}
+%%\item fastq
+%%\item bam
+%%\end{itemize}
+%%\item{Recap of R and Bioconductor}
+%%\begin{itemize}
+%%\item Vectors, data.frames, lists
+%%\item Functions
+%%\item How to get help
+%5\end{itemize}
+%%\end{itemize}
+%%\end{frame}
+
+\begin{frame}[fragile]{Introduction}
+Sequencing produces millions of reads. e.g in fastq format
+
+<<echo=FALSE>>=
+options(width=40)
+set.seed(0)
+
+@
+
+<<echo=FALSE,out.width=10,comment=NA,message=FALSE>>=
+suppressPackageStartupMessages(library(GeneticsHTSCourse2013))
+suppressPackageStartupMessages(library(GenomicRanges))
+library(RColorBrewer)
+gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
+bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
+
+for(i in 1:6){
+cat(paste("Read",i,"\n"))
+cat(paste(values(bam.sub2)$seq[i]),"\n")    
+}
+@
+
+
+
+These need to be compared to the genome (aligned) and we record the chromosome and coordinates that each sequence aligns to, often with quality information. 
+
+\end{frame}
+
+\ifinclude{% 
+
+\begin{frame}[fragile]
+Need consistent representation of (1) genome and (2) reads
+<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6,results='hide'>>=
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Gviz))
+suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg18))
+
+gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
+bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
+
+reads <- lapply(1:6, function(x) AnnotationTrack(GRanges("chr21", IRanges(start(bam.sub2[x]),end(bam.sub2[x]))),name=paste("Read",x,sep="")))
+strack <- SequenceTrack(Hsapiens, chromosome = "chr21",name="Genome")
+tracks <- reads
+tracks <- c(reads, strack)
+plotTracks(tracks,from=39751851,to=39751890)
+
+@
+
+Reads come with quality score and IDs that also need to be captured
+\end{frame}
+}
+
+\ifinclude{% 
+
+\begin{frame}[fragile]{Associating reads with positions}
+Often we are given the mapped location of reads
+<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6>>=
+gtrack <- GenomeAxisTrack()
+tracks <- c(gtrack,reads, strack)
+plotTracks(tracks,from=39751851,to=39751871)
+
+@
+
+Need a way of representing alignments and associated qualities
+\end{frame}
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Associating with Genomic Features}
+We will often want to find information about the genomic region around the reads
+<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6>>=
+
+suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+genetrack <- GeneRegionTrack(txdb, chromosome="chr21",start = 39751950,end=40032591)
+tracks <- c(gtrack, reads, genetrack,strack)
+
+plotTracks(tracks)
+
+@
+
+\end{frame}
+}
+
+
+%%\begin{frame}[fragile]{Visualising Multiple Reads}
+
+%%<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=10>>=
+%%aTrack2 <- AnnotationTrack(range = "Data/NA19240_GAIIx_100_chr21.bam", genome = "hg19",name="Reads",chromosome="chr21",from=39751950,to=40032591)
+%%plotTracks(list(aTrack2,genetrack),from=39751950,to=39753000)              
+%%@
+%%\end{frame}
+
+\ifinclude{% 
+
+\begin{frame}[fragile]
+Or use definitions of genomic regions to interrogate the data
+<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=5>>=
+dTrack <- DataTrack(range = NA19240.chr21Bam(), genome = "hg19",name="Coverage",chromosome="chr21",from=39751950,to=40032591,type="l")
+
+
+plotTracks(list(dTrack,genetrack),from=39751950,to=40032591)              
+@
+Need representation of genomic regions of interest
+\end{frame}
+
+}
+
+\begin{frame}{Why bother doing these things in R?}
+\begin{itemize}
+\item{Interactivity and data exploration}
+\item{Quality assessment}
+\item{Access to exisiting statistical and visualisation techniques (e.g. limma)}
+\item{Reproducibility}
+\end{itemize}
+
+\textbf{We will not do alignment of reads in R}
+\end{frame}
+
+
+\begin{frame}{Packages we will meet}
+\begin{itemize}
+\item{Biostrings - Manipulation of DNA sequences in R}
+\item{BSgenome - Pre-built reference genomes}
+\item{ShortRead - Input / output of fastq files and quality assessment}
+\item{IRanges - Low-level classes and functions for dealing with intervals of consecutive values}
+\item{GenomicRanges - Functions for representing ranges with sequence and strand information}
+\item{Rsamtools - Input of bam files}
+\item{GenomicFeatures - Storage and manipulation of genes and transcripts}
+\end{itemize}
+\end{frame}
+
+\section{Strings}
+\subsection{Strings in R}
+
+
+\begin{frame}[fragile]{DNA Sequences}
+<<echo=FALSE>>=
+rand <- sapply(1:100, function(x) paste(sample(c("A", "T", 
+          "G", "C"), sample(10:20),replace=TRUE),
+          collapse=""))
+randomStrings <- rand
+myseq <- rand[1:4]
+myseq
+@
+We can represent sequences of A, T, C, G in 'base' R. Several useful operations are possible
+<<>>=
+myseq 
+gsub("AAA", "NNN", myseq)
+nchar(myseq)
+substr(myseq, 1,3)
+@
+
+
+\end{frame}
+
+\subsection{Biostrings}
+
+\begin{frame}[fragile]{Biostrings package}
+However, the Biostrings package is specifically-designed for biological sequences
+<<>>=
+library(Biostrings)
+myseq <- DNAStringSet(randomStrings)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Biostrings operations}
+
+<<>>=
+myseq
+@
+
+\end{frame}
+\begin{frame}[fragile]{Biostrings operations}
+
+<<>>=
+myseq[1:2]
+width(myseq)[1:2]
+length(width(myseq))
+table(width(myseq))
+@
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+subseq(myseq, 1, 3)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+Some useful string operation functions are provided
+<<>>=
+alphabetFrequency(myseq[1:4,], baseOnly=TRUE)
+af <- alphabetFrequency(myseq, baseOnly=TRUE)
+myseq[af[,1] ==0,]
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+<<fig=TRUE,dev='pdf',fig.width=10, fig.height=4>>=
+boxplot(af)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]{More-specialised features}
+
+<<>>=
+myseq[1:2,]
+reverse(myseq[1:2,])
+reverseComplement(myseq[1:2,])
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<warning=FALSE>>=
+translate(myseq[1:4,])
+@
+\end{frame}
+
+
+
+\subsection{Representing reads}
+
+\begin{frame}[fragile]{Fastq Recap}
+Recall that sequence reads are represented in text format
+<<E>>=
+readLines(sampleFQ(),n=10)
+@
+It should be possible to represent these as \textbf{Biostrings} objects
+\end{frame}
+
+\begin{frame}[fragile]{The Short Read package}
+Has convenient functions for reading fastq files and performing quality assessment
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(ShortRead))
+
+@
+
+<<>>=
+library(ShortRead)
+fq <- readFastq(sampleFQ())
+fq
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+sread(fq)[1:3,]
+quality(fq)[1:3,]
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=FALSE>>=
+id <-ShortRead:::id
+@
+<<>>=
+id(fq)[1:3]
+@
+
+Could parse the ID for run names, lanes, tiles etc
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(reshape))
+@
+
+<<>>=
+abc <- alphabetByCycle(sread(fq))
+abc[1:4, 1:8]
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+
+<<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=8,fig.show='hold'>>=
+ggplot(melt(abc[1:4,]), aes(x = cycle, y = value, col=alphabet,label=alphabet)) + geom_point() + geom_text() + ylab("Base Count")
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Conversion of qualities}
+Phred quality scores are integers from 0 to 50 that are stored as ASCII characters after adding 33. The basic R functions rawToChar and charToRaw can be used to convert
+<<>>=
+phred <- 1:10
+phreda <- paste(sapply(as.raw((phred)+33), rawToChar), collapse=""); phreda
+as.integer(charToRaw(phreda))-33
+round(10^((-(as.integer(charToRaw(phreda))-33)/10)),2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+<<>>=
+quality(fq)[1]
+as.integer(charToRaw(">>>>>>>>>>>>>>>>>>>>><>>>>>+>+:48><"))-33
+
+@
+\end{frame}
+
+\begin{frame}[fragile]{A shortcut}
+<<>>=
+qual <- as(quality(fq), "matrix")
+dim(qual)
+qual[1,]
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6,fig.show='hold'>>=
+plot(colMeans(qual), type="b")
+@
+\end{frame}
+\ifinclude{% 
+\begin{frame}[fragile]{Read Occurrence}
+
+<<>>=
+
+tbl <- tables(fq)
+names(tbl)
+tbl$top[1:5]
+@
+\end{frame}
+}
+\ifinclude{% 
+\begin{frame}[fragile]
+<<>>==
+head(tbl$distribution)
+@
+
+977827 sequences appear only once, 6801 appear twice, etc.
+\end{frame}
+}
+
+\begin{frame}[fragile]
+We can trim the reads if required
+<<>>=
+subseq(sread(fq), 1, 10)
+@
+And write the resulting files
+<<eval=FALSE>>=
+write.XStringSet(...)
+@
+\end{frame}
+\ifinclude{% 
+\begin{frame}[fragile]
+We could even do some 'aligning' in R
+
+<<>>=
+system.time(aln <- matchPattern(as.character(sread(fq)[2]),hg19[["chr1"]]))
+aln
+@
+\end{frame}
+}
+\ifinclude{% 
+\begin{frame}[fragile]
+<<>>=
+sread(fq)[2]
+getSeq(hg19, "chr1", 249066163, 249066197)
+identical(as.character(sread(fq)[2]), as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
+@
+We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
+\end{frame}
+}
+
+\subsection{Representing the genome}
+
+\begin{frame}[fragile]{The genome as a string - BSGenome}
+
+<<message=FALSE,warning=FALSE>>=
+library(BSgenome)
+head(available.genomes())
+available.genomes()[23:25]
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{The human genome}
+
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg19))
+@
+
+<<>>=
+library(BSgenome.Hsapiens.UCSC.hg19)
+hg19 <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+hg19
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Retrieve Sequences}
+
+<<>>=
+tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
+tp53
+as.character(tp53)
+alphabetFrequency(tp53,baseOnly=TRUE)
+subseq(tp53, 1000,1010)
+@
+\end{frame}
+
+\begin{frame}[fragile]{Timings}
+Don't need to load the whole genome into memory, so reading a particular sequence is \textbf{fast}
+
+<<>>=
+system.time(tp53 <- getSeq(hg19, "chr17", 7577851, 7598063))
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Manipulating sequences}
+We can now use Biostrings operations to manipulate the sequence
+<<manipSeqs,warning=FALSE>>=
+translate(subseq(tp53, 1000,1010))
+reverseComplement(subseq(tp53, 1000,2000))
+@
+Later, we will show how the sequences for genomic features can be extracted
+\end{frame}
+
+
+
+\section{Ranges}
+\subsection{IRanges}
+
+
+\begin{frame}[fragile]{IRanges}
+\begin{itemize}
+\item Genome is typically represented as linear sequence
+\item Ranges are an ordered set of consecutive integers defined by a
+start and end position
+\item start $\le$ end
+\item Ranges are a common scaffold for many genomic analyses
+\item Ranges can be associated with genomic information (e.g. gene name) or data derived from analysis (e.g. counts)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+Suppose we want to capture information on the following intervals
+<<echo=FALSE,message=FALSE,warning=FALSE>>=
+library(ggbio)
+ir <- IRanges(start = c(7,9,12,14,22:24), 
+              end=c(15,11,12,18,26,27,28))
+pl <- autoplot(ir,fill=brewer.pal(n=length(ir),"Set1"))+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+library(gridExtra)
+@
+\begin{columns}
+\column{.5\textwidth}
+
+\begin{tabular}{|c|r|}
+Start & End \\
+7 & 15 \\
+9 & 11 \\
+12 & 12 \\
+14 & 18 \\
+22 & 26 \\
+23 & 27 \\
+24 & 28
+\end{tabular}
+\column{.5\textwidth}
+<<echo=FALSE,message=FALSE>>=
+pl
+@
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir <- IRanges(start = c(7,9,12,14,22:24), 
+              end=c(15,11,12,18,26,27,28))
+ir
+@
+\column{.5\textwidth}
+<<>>=
+start(ir)
+end(ir)
+width(ir)
+@
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Ranges as vectors}
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+ir[1:2]
+ir[width(ir)==5]
+@
+\end{columns}
+\end{frame}
+
+\begin{frame}{Common Operations}
+\begin{itemize}
+\item  shift - move ranges by specified amount
+\item resize - change width, anchoring start, end or mid 􏰁 flank - Regions adjacent to start or end
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Shifting}
+We could do this the long way
+<<>>=
+ir2 <- IRanges(start(ir) + 5, end(ir) + 5) 
+@
+But a shortcut is provided by IRanges
+<<>>=
+identical(ir2, shift(ir, 5))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Shifting}
+e.g. sliding windows
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+shift(ir, 5)
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5,message=FALSE>>=
+p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
+tracks(pl, p2)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Shifting}
+Size of shift doesn’t need to be constant
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+shift(ir, 7:1)
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1"))+geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
+tracks(pl, p2)
+
+@
+\end{frame}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Resize}
+e.g. trimming reads
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+resize(ir,3)
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+tracks(pl, p2)
+@
+\end{frame}
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Resize}
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+resize(ir,3,fix="end")
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+tracks(pl, p2)
+@
+\end{frame}
+}
+
+\ifinclude{% 
+
+\begin{frame}[fragile]{Reducing}
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+reduce(ir)
+@
+\end{columns}
+<<echo=FALSE,fig.height=3>>=
+p2 <- autoplot(reduce(ir)) + xlim(5,40)
+tracks(pl, p2)
+@
+\end{frame}
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Gaps}
+e.g. introns
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+gaps(ir)
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(gaps(ir)) + xlim(5,40)
+tracks(pl, p2)
+@
+\end{frame}
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Flanking}
+e.g. promoters
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+ir
+@
+\column{.5\textwidth}
+<<>>=
+flank(ir,2)
+@
+\end{columns}
+<<echo=FALSE,fig.height=2.5>>=
+p2 <- autoplot(flank(ir,2)) + xlim(5,40)
+tracks(pl, p2)
+@
+\end{frame}
+}
+
+
+
+
+\begin{frame}[fragile]{Coverage}
+coverage returns a Run Length Encoding - an efficient representation of repeated values
+
+<<>>=
+cvg <- coverage(ir)
+cvg
+as.vector(cvg[1:12])
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=FALSE,fig.height=6>>=
+p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
+tracks(pl,p2)
+@
+\end{frame}
+
+\ifinclude{% 
+
+\begin{frame}[fragile]
+’slice’ to get peaks
+<<>>=
+ranges(slice(coverage(ir), 2))
+@
+\end{frame}
+}
+
+\begin{frame}[fragile]{Overlaps...}
+e.g. counting
+<<>>=
+ir3 <- IRanges(start = c(1, 14, 27), end = c(13,
+    18, 30))
+ir3
+@
+
+<<echo=FALSE,fig.height=3>>=
+p2 <- autoplot(ir3) + xlim(5,40)
+tracks(pl,p2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Overlaps}
+<<>>=
+query <- ir
+subject <- ir3
+ov <- findOverlaps(query, subject)
+ov
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{columns}
+\column{.5\textwidth}
+<<>>=
+query[queryHits(ov)]
+@
+\column{.5\textwidth}
+<<>>=
+subject[subjectHits(ov)]
+@
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+
+<<echo=FALSE,fig.height=4>>=
+pl2 <- autoplot(ir3)
+p2 <- autoplot(unique(query[queryHits(ov)]),fill=brewer.pal(n=length(ir),"Set1")[-5])
+tracks(pl, pl2, p2)
+@
+Can make the overlap more stringent
+<<>>=
+findOverlaps(query,subject,type="within")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]{Intersection}
+
+<<>>=
+intersect(ir,ir3)
+@
+
+<<echo=FALSE,fig.height=4>>=
+p2 <- autoplot(intersect(ir,ir3))
+tracks(pl,pl2,p2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Subtraction}
+
+<<>>=
+setdiff(ir,ir3)
+@
+
+<<echo=FALSE,fig.height=4>>=
+p2 <- autoplot(setdiff(ir,ir3))
+tracks(pl,pl2,p2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Nearest}
+e.g. Annotating to features...
+<<>>=
+nearest(ir,ir3)
+@
+
+<<echo=FALSE,fig.height=4>>=
+p2 <- autoplot(ir,fill=brewer.pal(3,"Set2")[nearest(ir,ir3)])
+tracks(pl,pl2,p2)
+@
+
+\end{frame}
+
+
+\begin{frame}{GRanges and Genomic Features}
+\begin{itemize}
+\item GRanges provides infrastructure to manipulate genomic intervals in an efficient manner
+\item GenomicFeatures provides infrastructure to manipulate databases of genomic features (e.g. transcripts, exons)
+\end{itemize}
+
+\end{frame}
+\ifinclude{% 
+\begin{frame}[fragile]
+GRanges objects are IRanges with additional metadata (e.g. chromosome name, strand)
+<<>>=
+gr <- GRanges(rep("chr1",length(ir)), ranges=ir)
+gr
+@
+
+\end{frame}
+
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]{Reducing}
+<<eval=FALSE>>=
+reduce(gr)
+shift(gr,5)
+@
+
+\begin{columns}[t]
+\column{.5\textwidth}
+<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+autoplot(reduce(gr))+xlim(5,40) + ggtitle("Reduced")
+@
+\column{.5\textwidth}
+<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+autoplot(shift(gr,5)) + ggtitle("Shifted")
+@
+\end{columns}
+
+\end{frame}
+}
+
+
+\begin{frame}[fragile]
+We now define a 'chromosome' for each range
+<<>>=
+gr <- GRanges(c("A","A","A","B","B","B","B"), ranges=ir)
+gr
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Reducing}
+<<eval=FALSE>>=
+reduce(gr)
+@
+
+\begin{columns}[t]
+\column{.5\textwidth}
+<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+autoplot(gr)+xlim(5,40) + ggtitle("Original")
+@
+\column{.5\textwidth}
+<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+autoplot(reduce(gr)) + ggtitle("Reduced")
+@
+\end{columns}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\begin{columns}[t]
+\column{.5\textwidth}
+<<>>=
+gr
+gr2 <- GRanges("A", ir3)
+@
+\column{.5\textwidth}
+<<>>=
+gr2
+intersect(gr,gr2)
+@
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\begin{columns}[t]
+\column{.5\textwidth}
+<<>>=
+gr
+gr3 <- GRanges("B", ir3)
+@
+\column{.5\textwidth}
+<<>>=
+gr3
+intersect(gr,gr3)
+@
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]{Naming conventions}
+Sometimes (well, often) different naming conventions are used for chromosome names
+
+<<>>=
+seqlevels(gr)
+
+gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
+gr
+
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Assigning metadata}
+GRanges objects can also have metadata associated with them
+<<>>=
+meta <- data.frame(SomeVals = runif(n=length(gr), 100,200),
+                   OtherVals = runif(n=length(gr), 0,1),
+                   SomeChars = sample(LETTERS,length(gr))
+)
+values(gr) <- meta 
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+gr[1:5]
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+gr[values(gr)$SomeVals > 150]
+@
+\end{frame}
+
+\ifinclude{% 
+\begin{frame}[fragile]
+<<>>=
+gr[order(values(gr)$OtherVals)]
+@
+\end{frame}
+}
+\ifinclude{% 
+\begin{frame}[fragile]
+GRanges can be split according to metadata
+
+<<>>=
+split(gr, values(gr)$SomeChars)
+@
+\end{frame}
+}
+
+\ifinclude{% 
+\begin{frame}[fragile]
+Summary values can be computed
+
+<<>>=
+lapply(split(gr, values(gr)$SomeChars),function(x) mean(values(x)$SomeVals))
+@
+\end{frame}
+}
+\subsection{Dealing with alignments - Rsamtools}
+
+\begin{frame}[fragile]{Reading alignments}
+We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGAlignments tool in GenomicRanges which extracts the essential information from the bam file.
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(pasillaBamSubset))
+suppressPackageStartupMessages(library(Rsamtools))
+
+mybam <- untreated3_chr4()
+options(width=60)
+@
+
+<<>>=
+bam <- readGAlignments(mybam,use.name=TRUE)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Useful links}
+Definiton of the bam / sam format
+\href{http://samtools.sourceforge.net/SAMv1.pdf}{\color{blue}{\tt http://samtools.sourceforge.net/SAMv1.pdf}}
+
+Explanation of the bam flags
+
+\href{http://picard.sourceforge.net/explain-flags.html}{\color{blue}{\tt http://picard.sourceforge.net/explain-flags.html}}\\
+Some example files to play with
+
+\href{http://www.illumina.com/truseq/tru_resources/datasets.ilmn}{\color{blue}{\tt http://www.illumina.com/truseq/tru\_resources/datasets.ilmn}}\\
+IGV Genome browser\\
+\href{http://www.broadinstitute.org/igv/}{\color{blue}{\tt http://www.broadinstitute.org/igv/}}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+The result looks a lot like a GRanges object. In fact, a lot of the same operations can be use
+<<>>=
+bam[1:4]
+@
+\end{frame}
+
+\begin{frame}[fragile]{Querying alignments}
+
+<<>>=
+table(strand(bam))
+summary(width(bam))
+range(start(bam))
+cigar(bam)[1:10]
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Manipulation of reads}
+
+The aligned reads can be manipulated using functions from IRanges
+
+<<>>=
+shift(ranges(bam),10)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Manipulation of reads}
+
+The aligned reads can be manipulated using functions from IRanges
+
+<<>>=
+coverage(ranges(bam))
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{Region subset - the naive way}
+<<>>=
+bam[start(bam) < 20100 & end(bam) > 20000, ]
+
+@
+
+\end{frame}
+
+\begin{frame}[fragile]{The smart way}
+
+<<>>=
+gr <- GRanges("chr4", IRanges(start = 20000, end = 20100))
+gr
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+findOverlaps(gr,bam)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+bam[subjectHits(findOverlaps(gr,bam))]
+@
+\end{frame}
+
+
+\begin{frame}[fragile]{Alternative}
+<<>>=
+bam.sub <- bam[bam %over% gr]
+bam.sub
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Read subset of regions}
+quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the param argument.
+
+<<>>=
+system.time(bam.sub <-
+readGAlignments(file=mybam,
+use.names=TRUE, 
+param=ScanBamParam(which=gr)))
+
+@
+
+\end{frame}
+
+\section{Transcript-centric annotation}
+
+\begin{frame}{GenomicFeatures}
+\begin{itemize}
+\item The GenomicFeatures package retrieves and manages transcript-related features from the UCSC Genome Bioinformatics and BioMart data resources
+\item Transcript metadata is stored in an TranscriptDb object
+\item The object maps 5’ and 3’ UTRS, protein coding sequences (CDS) and exons for a set of mRNA transcripts to their associated genome
+\item SQLite database used to manage relationships between transcripts, exons, CDS and gene identifiers
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Pre-built packages}
+
+
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
+
+@
+
+A full list of packages is available on the BioC website
+<<>>=
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+@
+Name of package indicates the organism, transcript source and genome build
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+<<>>=
+txdb
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Grouping Genes}
+A function exists to do this efficiently
+<<>>=
+exons <- exonsBy(txdb, "gene")
+is(exons)
+length(exons)
+@
+see also transcriptsBy, intronsByTranscript, fiveUTRsByTranscript, threeUTRsByTranscript
+\end{frame}
+
+\begin{frame}[fragile]
+The result can be subset by Gene ID (entrez)
+<<>>=
+exons[["673"]]
+@
+
+\end{frame}
+
+
+
+\begin{frame}{Implications}
+\begin{itemize}
+
+\item We now have a way of retrieving transcript and exon locations as GRanges.
+\item Any function that uses a GRanges object can easily interact with gene locations
+\begin{itemize}
+
+\item{Reading subset of a bam file}
+\item{Counting overlaps}
+\item{Retrieving genome sequence}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Examples}
+Retrieve the subset of reads that overlap a particular gene.
+First, return the positional information about the gene as a GRanges object
+           
+<<warning=FALSE>>=
+gr <- exons[["49"]]
+@
+Pass the GRanges object into the readGAlignments function
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(GeneticsHTSCourse2013))  
+mybam <-NA19914.chr22Bam()      
+gr <- renameSeqlevels(gr, c("chr22"= "22"))
+@  
+
+<<warning>>=
+system.time(bam.sub <- readGAlignments(file = mybam,
+    use.names = TRUE, param = ScanBamParam(which = gr)))             
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+bam.sub            
+@           
+\end{frame}
+
+
+
+\begin{frame}{Recap}
+\begin{itemize}
+\item Ranges can be used to represent continuous regions
+\item GRanges are special ranges with extra biological context
+\item GRanges can be manipulated, compared, overlapped with each other
+\item Aligned reads can be represented by Ranges
+\item Genome and sequencing reads can be represented efficiently by Biostrings
+\item The genome can also be accessed using Ranges
+\end{itemize} 
+\end{frame}
+
+%%\begin{frame}{To be continued...}
+%%\begin{itemize}
+%%\item{Tomorrow, we will go through an RNA-seq analysis workflow}
+%%\item{We will then look how to relate the regions of interest back to the genome}
+%%\end{itemize}
+%%\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{This talk was brought to you by...}
+
+<<sessionInfo>>=
+
+sessionInfo()
+@
+
+\end{frame}
+\end{document}
