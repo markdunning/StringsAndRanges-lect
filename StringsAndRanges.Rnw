@@ -5,7 +5,11 @@
   \renewenvironment{knitrout}{\begin{footnotesize}}{\end{footnotesize}}
 \else
 \fi
+\usepackage{media9}
 \begin{document}
+
+\pgfdeclareimage[height=0.5cm]{university-logo}{images/CRUK_CAMBRIDGE_I_Pos_RGB_300}
+\logo{\pgfuseimage{university-logo}}
 
 
 \title{Strings and Ranges in R and Bioconductor}
@@ -21,9 +25,12 @@
 
 % very important to use option [fragile] for frames containing code output!
 
+{
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{images/criBackdrop.jpg}}
 \begin{frame}
   \titlepage
 \end{frame}
+}
 
 \begin{frame}{Outline}
   \tableofcontents
@@ -513,6 +520,15 @@ identical(as.character(sread(fq)[2]), as.character(getSeq(hg19,"chr1", 249066163
 We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
 \end{frame}
 
+%%\begin{frame}{Intermission}
+
+%% \includemovie{QM6MNw7i6Ng.mp4}
+%%\end{frame}
+
+\begin{frame}{Intermission}
+Work through section 2 of the practical
+\end{frame}
+
 \section{Ranges}
 \subsection{IRanges}
 
@@ -932,38 +948,38 @@ autoplot(reduce(gr)) + ggtitle("Reduced")
 
 
 
-\begin{frame}[fragile]
-\begin{columns}[t]
-\column{.5\textwidth}
-<<>>=
-gr
-gr2 <- GRanges("A", ir3)
-@
-\column{.5\textwidth}
-<<>>=
-gr2
-intersect(gr,gr2)
-@
-\end{columns}
+%%\begin{frame}[fragile]
+%%\begin{columns}[t]
+%%\column{.5\textwidth}
+%%<<>>=
+%%gr
+%%gr2 <- GRanges("A", ir3)
+%%@
+%%\column{.5\textwidth}
+%%<<>>=
+%%gr2
+%%intersect(gr,gr2)
+%%@
+%%\end{columns}
 
-\end{frame}
+%%\end{frame}
 
 
-\begin{frame}[fragile]
-\begin{columns}[t]
-\column{.5\textwidth}
-<<>>=
-gr
-gr3 <- GRanges("B", ir3)
-@
-\column{.5\textwidth}
-<<>>=
-gr3
-intersect(gr,gr3)
-@
-\end{columns}
+%%\begin{frame}[fragile]
+%%\begin{columns}[t]
+%%column{.5\textwidth}
+%%<<>>=
+%%gr
+%%gr3 <- GRanges("B", ir3)
+%%@
+%%\column{.5\textwidth}
+%%<<>>=
+%%gr3
+%%intersect(gr,gr3)
+%%@
+%%\end{columns}
 
-\end{frame}
+%%\end{frame}
 
 \begin{frame}[fragile]{Naming conventions}
 Sometimes (well, often) different naming conventions are used for chromosome names
@@ -985,7 +1001,7 @@ meta <- data.frame(SomeVals = runif(n=length(gr), 100,200),
                    OtherVals = runif(n=length(gr), 0,1),
                    SomeChars = sample(LETTERS,length(gr))
 )
-values(gr) <- meta 
+mcols(gr) <- meta 
 @
 \end{frame}
 
@@ -1015,15 +1031,19 @@ split(gr, values(gr)$SomeChars)
 @
 \end{frame}
 
-\begin{frame}[fragile]
-Summary values can be computed
+%%\begin{frame}[fragile]
+%%Summary values can be computed
 
-<<>>=
-lapply(split(gr, values(gr)$SomeChars),function(x) mean(values(x)$SomeVals))
-@
+%%<<>>=
+%%lapply(split(gr, values(gr)$SomeChars),function(x) mean(values(x)$SomeVals))%
+%%@
+%%\end{frame}
+
+\begin{frame}{Intermission}
+Section 3 of the practical
 \end{frame}
 
-\subsection{Dealing with alignments - Rsamtools}
+\section{Dealing with aligned reads}
 
 \begin{frame}[fragile]{Reading alignments}
 We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGappedAlignments tool in GenomicRanges which extracts the essential information from the bam file.
@@ -1041,20 +1061,6 @@ bam <- readGAlignments(mybam,use.name=TRUE)
 
 \end{frame}
 
-\begin{frame}[fragile]{Useful links}
-Definiton of the bam / sam format
-\href{http://samtools.sourceforge.net/SAMv1.pdf}{\color{blue}{\tt http://samtools.sourceforge.net/SAMv1.pdf}}
-
-Explanation of the bam flags
-
-\href{http://picard.sourceforge.net/explain-flags.html}{\color{blue}{\tt http://picard.sourceforge.net/explain-flags.html}}\\
-Some example files to play with
-
-\href{http://www.illumina.com/truseq/tru_resources/datasets.ilmn}{\color{blue}{\tt http://www.illumina.com/truseq/tru\_resources/datasets.ilmn}}\\
-IGV Genome browser\\
-\href{http://www.broadinstitute.org/igv/}{\color{blue}{\tt http://www.broadinstitute.org/igv/}}
-
-\end{frame}
 
 
 \begin{frame}[fragile]
@@ -1172,12 +1178,5 @@ param=ScanBamParam(which=gr)))
 
 
 
-\begin{frame}[fragile]{This talk was brought to you by...}
 
-<<sessionInfo>>=
-
-sessionInfo()
-@
-
-\end{frame}
 \end{document}
