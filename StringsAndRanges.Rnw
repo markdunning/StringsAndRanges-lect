@@ -370,9 +370,14 @@ Work through section 2 of the practical
 \section{Representing sequencing reads}
 
 \begin{frame}[fragile]{Fastq Recap}
+<<echo=F>>=
+path.to.my.fastq <- sampleFQ()
+
+@
+
 Recall that sequence reads are represented in text format
 <<E>>=
-readLines(sampleFQ(),n=10)
+readLines(path.to.my.fastq ,n=10)
 @
 It should be possible to represent these as \textbf{Biostrings} objects
 \end{frame}
@@ -384,9 +389,11 @@ suppressPackageStartupMessages(library(ShortRead))
 
 @
 
+
+
 <<>>=
 library(ShortRead)
-fq <- readFastq(sampleFQ())
+fq <- readFastq(path.to.my.fastq)
 fq
 @
 
@@ -893,40 +900,7 @@ tracks(pl,pl2,p2)
 \end{frame}
 
 \begin{frame}[fragile]
-GRanges objects are IRanges with additional metadata (e.g. chromosome name, strand)
-<<>>=
-gr <- GRanges(rep("chr1",length(ir)), ranges=ir)
-gr
-@
-
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]{Reducing}
-<<eval=FALSE>>=
-reduce(gr)
-shift(gr,5)
-@
-
-\begin{columns}[t]
-\column{.5\textwidth}
-<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
-autoplot(reduce(gr))+xlim(5,40) + ggtitle("Reduced")
-@
-\column{.5\textwidth}
-<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
-autoplot(shift(gr,5)) + ggtitle("Shifted")
-@
-\end{columns}
-
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-We now define a 'chromosome' for each range
+We can define a 'chromosome' for each range
 <<>>=
 gr <- GRanges(c("A","A","A","B","B","B","B"), ranges=ir)
 gr
@@ -1055,7 +1029,7 @@ Work through section 4 of the practical
 \section{Dealing with aligned reads}
 
 \begin{frame}[fragile]{Reading alignments}
-We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGappedAlignments tool in GenomicRanges which extracts the essential information from the bam file.
+We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGAlignments tool in GenomicRanges which extracts the essential information from the bam file.
 <<echo=FALSE>>=
 suppressPackageStartupMessages(library(pasillaBamSubset))
 suppressPackageStartupMessages(library(Rsamtools))
@@ -1153,7 +1127,7 @@ bam.sub
 
 
 \begin{frame}[fragile]{Read subset of regions}
-quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the param argument.
+Quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the param argument.
 
 <<>>=
 system.time(bam.sub <-
@@ -1174,6 +1148,8 @@ param=ScanBamParam(which=gr)))
 \item Genome and sequencing reads can be represented efficiently by Biostrings
 \item The genome can also be accessed using Ranges
 \end{itemize} 
+
+Now, work through Section 5 of the practical
 \end{frame}
 
 %%\begin{frame}{To be continued...}
