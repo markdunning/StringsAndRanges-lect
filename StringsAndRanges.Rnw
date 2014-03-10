@@ -193,6 +193,31 @@ Need representation of genomic regions of interest
 \section{Strings}
 \subsection{Strings in R}
 
+\begin{frame}[fragile]
+<<>>=
+string <- "The quick brown fox jumps over the lazy dog"
+is.character(string)
+substr(string,1,10)
+nchar(string)
+toupper(string)
+gsub(" ", ".", string)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+string2 <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
+is.character(string2)
+is.vector(string2)
+substr(string2,1,3)
+nchar(string2)
+toupper(string2)
+@
+\end{frame}
+
+
+
+
 
 \begin{frame}[fragile]{DNA Sequences}
 <<echo=FALSE>>=
@@ -200,14 +225,12 @@ rand <- sapply(1:100, function(x) paste(sample(c("A", "T",
           "G", "C"), sample(10:20),replace=TRUE),
           collapse=""))
 randomStrings <- rand
-myseq <- rand[1:4]
-myseq
+myseq <- rand[1:2]
 @
 We can represent sequences of A, T, C, G. Several useful operations are possible
 <<>>=
 myseq 
-
-gsub("ATG", "atg", myseq)
+gsub("A", "X", myseq)
 
 nchar(myseq)
 substr(myseq, 1,3)
@@ -237,19 +260,19 @@ myseq
 \begin{frame}[fragile]{Biostrings operations}
 
 <<>>=
-myseq[1:2,]
+myseq[1:5]
 @
 This doesn't work!
 
 <<eval=FALSE,echo=TRUE>>=
-myseq[,1:2]
+myseq[,1:5]
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 <<>>=
-subseq(myseq, 1, 3)
+subseq(myseq, 1, 5)
 @
 Similar to substr
 \end{frame}
@@ -257,8 +280,8 @@ Similar to substr
 \begin{frame}[fragile]{Biostrings operations}
 Accessor functions must be used to retrieve the data
 <<>>=
-width(myseq)[1:2]
-length(width(myseq))
+width(myseq)
+
 table(width(myseq))
 @
 
@@ -589,20 +612,26 @@ pl
 
 
 \begin{frame}[fragile]
-\begin{columns}
-\column{.5\textwidth}
 <<>>=
-ir <- IRanges(start = c(7,9,12,14,22:24), 
-              end=c(15,11,12,18,26,27,28))
+library(IRanges)
+ir <- IRanges(
+start = c(7,9,12,14,22:24), 
+end=c(15,11,12,18,26,27,28))
 ir
 @
-\column{.5\textwidth}
-<<>>=
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<tidy.source=FALSE>>=
 start(ir)
 end(ir)
 width(ir)
 @
-\end{columns}
+
+
+
 \end{frame}
 
 \begin{frame}[fragile]{Ranges as vectors}
@@ -621,10 +650,20 @@ ir[width(ir)==5]
 
 \begin{frame}{Common Operations}
 \begin{itemize}
+\item Intre-range
+\begin{itemize}
 \item  shift - move ranges by specified amount
-\item resize - change width, anchoring start, end or mid 􏰁 flank - Regions adjacent to start or end
+\item resize - change width, anchoring start, end or mid flank - Regions adjacent to start or end
+\item flank - flanking regions
+\end{itemize}
+\item{Inter-range}
+\begin{itemize}
+\item{reduce}
+\item{gaps}
+\end{itemize}
 \end{itemize}
 See GRanges paper
+\href{http://tinyurl.com/ovaux4p}{\color{blue}{Software for Computing and Annotating Genomic Ranges. (2013) PLoS Compuational Biology}}
 \end{frame}
 
 \begin{frame}[fragile]{Shifting}
@@ -734,41 +773,41 @@ tracks(pl, p2)
 \end{frame}
 
 
-\begin{frame}[fragile]{Gaps}
-e.g. introns
-\begin{columns}
-\column{.5\textwidth}
-<<>>=
-ir
-@
-\column{.5\textwidth}
-<<>>=
-gaps(ir)
-@
-\end{columns}
-<<echo=FALSE,fig.height=2.5>>=
-p2 <- autoplot(gaps(ir)) + xlim(5,40)
-tracks(pl, p2)
-@
-\end{frame}
+%%\begin{frame}[fragile]{Gaps}
+%%e.g. introns
+%%\begin{columns}
+%%\column{.5\textwidth}
+%%<<>>=
+%%ir
+%@
+%\column{.5\textwidth}
+%<<>>=
+%%gaps(ir)
+%@
+%\end{columns}
+%<<echo=FALSE,fig.height=2.5>>=
+%%p2 <- autoplot(gaps(ir)) + xlim(5,40)
+%tracks(pl, p2)
+%%@
+%\end{frame}
 
-\begin{frame}[fragile]{Flanking}
-e.g. promoters
-\begin{columns}
-\column{.5\textwidth}
-<<>>=
-ir
-@
-\column{.5\textwidth}
-<<>>=
-flank(ir,2)
-@
-\end{columns}
-<<echo=FALSE,fig.height=2.5>>=
-p2 <- autoplot(flank(ir,2)) + xlim(5,40)
-tracks(pl, p2)
-@
-\end{frame}
+%\begin{frame}[fragile]{Flanking}
+%e.g. promoters
+%%\begin{columns}
+%\column{.5\textwidth}
+%<<>>=
+%ir
+%@
+%\column{.5\textwidth}
+%<<>>=
+%flank(ir,2)
+%@
+%\end{columns}
+%<<echo=FALSE,fig.height=2.5>>=
+%p2 <- autoplot(flank(ir,2)) + xlim(5,40)
+%tracks(pl, p2)
+%@
+%\end{frame}
 
 
 
@@ -785,7 +824,7 @@ as.vector(cvg[1:12])
 \end{frame}
 
 \begin{frame}[fragile]
-<<echo=FALSE,fig.height=6>>=
+<<echo=FALSE,fig.height=5>>=
 p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
 tracks(pl,p2)
 @
@@ -793,7 +832,7 @@ tracks(pl,p2)
 
 
 \begin{frame}[fragile]
-’slice’ to get peaks
+'slice' to get peaks
 <<>>=
 ranges(slice(coverage(ir), 2))
 @
@@ -844,10 +883,10 @@ pl2 <- autoplot(ir3)
 p2 <- autoplot(unique(query[queryHits(ov)]),fill=brewer.pal(n=length(ir),"Set1")[-5])
 tracks(pl, pl2, p2)
 @
-Can make the overlap more stringent
-<<>>=
-findOverlaps(query,subject,type="within")
-@
+%Can make the overlap more stringent
+%<<>>=
+%findOverlaps(query,subject,type="within")
+%@
 \end{frame}
 
 
@@ -877,18 +916,18 @@ tracks(pl,pl2,p2)
 
 \end{frame}
 
-\begin{frame}[fragile]{Nearest}
-e.g. Annotating to features...
-<<>>=
-nearest(ir,ir3)
-@
+%\begin{frame}[fragile]{Nearest}
+%%e.g. Annotating to features...
+%<<>>=
+%nearest(ir,ir3)
+%@
 
-<<echo=FALSE,fig.height=4>>=
-p2 <- autoplot(ir,fill=brewer.pal(3,"Set2")[nearest(ir,ir3)])
-tracks(pl,pl2,p2)
-@
+%<<echo=FALSE,fig.height=4>>=
+%p2 <- autoplot(ir,fill=brewer.pal(3,"Set2")[nearest(ir,ir3)])
+%tracks(pl,pl2,p2)
+%@
 
-\end{frame}
+%\end{frame}
 
 
 \begin{frame}{GRanges and Genomic Features}
@@ -1151,6 +1190,7 @@ param=ScanBamParam(which=gr)))
 
 Now, work through Section 5 of the practical
 \end{frame}
+
 
 %%\begin{frame}{To be continued...}
 %%\begin{itemize}
