@@ -14,7 +14,7 @@
 
 \title{Strings and Ranges in R and Bioconductor}
 \author{Mark Dunning}
-\date{12th March 2014}
+\date{3rd September 2014}
 \institute[Bioinformatics Core] % (optional, but mostly needed)
 {
 
@@ -77,10 +77,12 @@ set.seed(0)
 @
 
 <<echo=FALSE,out.width=10,comment=NA,message=FALSE>>=
-suppressPackageStartupMessages(library(GeneticsHTSCourse2013))
 suppressPackageStartupMessages(library(GenomicRanges))
-gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
-bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
+suppressPackageStartupMessages(library(GenomicAlignments))
+library(RColorBrewer)
+mybam <- "exampleData/NA19914.chr22.bam"
+gr <- GRanges("22", IRanges(start = 33451818, end=33842866))
+bam.sub2 <- readGAlignments(file=mybam,use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
 
 for(i in 1:6){
 cat(paste("Read",i,"\n"))
@@ -102,14 +104,17 @@ suppressPackageStartupMessages(library(GenomicRanges))
 suppressPackageStartupMessages(library(Gviz))
 suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg18))
 
-gr <- GRanges("chr21", IRanges(start = 39751950, end=40032591))
-bam.sub2 <- readGAlignments(file=NA19240.chr21Bam(),use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
+gr <- GRanges("22", IRanges(start = 33451818, end=33842866))
+bam.sub2 <- readGAlignments(file=mybam,use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
 
-reads <- lapply(1:6, function(x) AnnotationTrack(GRanges("chr21", IRanges(start(bam.sub2[x]),end(bam.sub2[x]))),name=paste("Read",x,sep="")))
-strack <- SequenceTrack(Hsapiens, chromosome = "chr21",name="Genome")
+bam.sub2 <- renameSeqlevels(bam.sub2, c("22" = "chr22"))
+
+reads <- lapply(1:6, function(x) AnnotationTrack(GRanges("chr22", IRanges(start(bam.sub2[x]),end(bam.sub2[x]))),name=paste("Read",x,sep="")))
+strack <- SequenceTrack(Hsapiens, chromosome = "chr22",name="Genome")
 tracks <- reads
 tracks <- c(reads, strack)
-plotTracks(tracks,from=39751851,to=39751890)
+
+plotTracks(tracks,from=33451942,to=33452132)
 
 @
 
@@ -121,8 +126,7 @@ Often we are given the mapped location of reads
 <<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6>>=
 gtrack <- GenomeAxisTrack()
 tracks <- c(gtrack,reads, strack)
-plotTracks(tracks,from=39751851,to=39751871)
-
+plotTracks(tracks,from=33451942,to=33452132)
 @
 
 Need a way of representing alignments and associated qualities
@@ -136,10 +140,10 @@ We will often want to find information about the genomic region around the reads
 
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
-genetrack <- GeneRegionTrack(txdb, chromosome="chr21",start = 39751950,end=40032591)
-tracks <- c(gtrack, reads, genetrack,strack)
+genetrack <- GeneRegionTrack(txdb, chromosome="chr22",start = 33450942,end=33454332)
+tracks <- c(gtrack, reads, genetrack)
 
-plotTracks(tracks)
+plotTracks(tracks, from=33450942,to=33454332)
 
 @
 
@@ -158,10 +162,25 @@ plotTracks(tracks)
 \begin{frame}[fragile]
 Or use definitions of genomic regions to interrogate the data
 <<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=5>>=
-dTrack <- DataTrack(range = NA19240.chr21Bam(), genome = "hg19",name="Coverage",chromosome="chr21",from=39751950,to=40032591,type="l")
+
+bamFile <- system.file("extdata/test.bam", package = "Gviz")
 
 
-plotTracks(list(dTrack,genetrack),from=39751950,to=40032591)              
+suppressPackageStartupMessages(library(pasillaBamSubset))
+suppressPackageStartupMessages(library(Rsamtools))
+mybam <- untreated3_chr4()
+
+dTrack4 <- DataTrack(range = untreated3_chr4(), genome = "dm3",
+ type = "l", name = "Coverage", window = -1, chromosome = "chr4")
+
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+
+txTr <- GeneRegionTrack(txdb, chromosome="chr4", genome="dm3",start = 2266,end=51954)
+plotTracks(list(dTrack4,txTr),from=2266,to=51954 )
+
+
 @
 Need representation of genomic regions of interest
 \end{frame}
@@ -394,7 +413,7 @@ Work through section 2 of the practical
 
 \begin{frame}[fragile]{Fastq Recap}
 <<echo=F>>=
-path.to.my.fastq <- sampleFQ()
+path.to.my.fastq <- "exampleData//sample.fq"
 
 @
 
