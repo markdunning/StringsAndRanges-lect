@@ -560,7 +560,8 @@ write.XStringSet(...)
 We could even do some 'aligning' in R
 
 <<>>=
-system.time(aln <- matchPattern(as.character(sread(fq)[2]),hg19[["chr1"]]))
+system.time(aln <- matchPattern(as.character(sread(fq)[2]),
+                                hg19[["chr1"]]))
 aln
 @
 \end{frame}
@@ -569,7 +570,8 @@ aln
 <<>>=
 sread(fq)[2]
 getSeq(hg19, "chr1", 249066163, 249066197)
-identical(as.character(sread(fq)[2]), as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
+identical(as.character(sread(fq)[2]), 
+  as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
 @
 We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
 \end{frame}
@@ -1087,7 +1089,7 @@ Work through section 4 of the practical
 \section{Dealing with aligned reads}
 
 \begin{frame}[fragile]{Reading alignments}
-We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGAlignments tool in GenomicRanges which extracts the essential information from the bam file.
+We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. Rsamtools provides an interface for doing this. But we will use the readGAlignments tool in GenomicAlignments which extracts the essential information from the bam file.
 <<echo=FALSE>>=
 suppressPackageStartupMessages(library(pasillaBamSubset))
 suppressPackageStartupMessages(library(Rsamtools))
