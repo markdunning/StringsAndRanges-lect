@@ -14,7 +14,7 @@
 
 \title{Strings and Ranges in R and Bioconductor}
 \author{Mark Dunning}
-\date{3rd September 2014}
+\date{12 November 2014}
 \institute[Bioinformatics Core] % (optional, but mostly needed)
 {
 
@@ -209,30 +209,30 @@ Need representation of genomic regions of interest
 \end{itemize}
 \end{frame}
 
-\section{Strings}
-\subsection{Strings in R}
+%%\section{Strings}
+%%\subsection{Strings in R}
 
-\begin{frame}[fragile]
-<<>>=
-string <- "The quick brown fox jumps over the lazy dog"
-is.character(string)
-substr(string,1,10)
-nchar(string)
-toupper(string)
-gsub(" ", ".", string)
-@
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%string <- "The quick brown fox jumps over the lazy dog"
+%%is.character(string)
+%%substr(string,1,10)
+%%nchar(string)
+%%toupper(string)
+%%gsub(" ", ".", string)
+%%@
+%%\end{frame}
 
-\begin{frame}[fragile]
-<<>>=
-string2 <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
-is.character(string2)
-is.vector(string2)
-substr(string2,1,3)
-nchar(string2)
-toupper(string2)
-@
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%string2 <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
+%%is.character(string2)
+%%is.vector(string2)
+%%substr(string2,1,3)
+%%nchar(string2)
+%%toupper(string2)
+%%@
+%%\end{frame}
 
 
 
@@ -404,10 +404,10 @@ reverseComplement(subseq(tp53, 1000,2000))
 Later, we will show how the sequences for genomic features can be extracted
 \end{frame}
 
-\section{Hands-on}
-\begin{frame}{Intermission}
-Work through section 2 of the practical
-\end{frame}
+%%\section{Hands-on}
+%%\begin{frame}{Intermission}
+%%Work through section 2 of the practical
+%%\end{frame}
 
 \section{Representing sequencing reads}
 
@@ -556,36 +556,36 @@ write.XStringSet(...)
 @
 \end{frame}
 
-\begin{frame}[fragile]
-We could even do some 'aligning' in R
+%%\begin{frame}[fragile]
+%%We could even do some 'aligning' in R
 
-<<>>=
-system.time(aln <- matchPattern(as.character(sread(fq)[2]),
-                                hg19[["chr1"]]))
-aln
-@
-\end{frame}
+%%<<>>=
+%%system.time(aln <- matchPattern(as.character(sread(fq)[2]),
+                                %%hg19[["chr1"]]))
+%%aln
+%%@
+%%\end{frame}
 
-\begin{frame}[fragile]
-<<>>=
-sread(fq)[2]
-getSeq(hg19, "chr1", 249066163, 249066197)
-identical(as.character(sread(fq)[2]), 
-  as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
-@
-We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%sread(fq)[2]
+%%getSeq(hg19, "chr1", 249066163, 249066197)
+%%identical(as.character(sread(fq)[2]), 
+%%  as.character(getSeq(hg19,"chr1", 249066163, 249066197)))
+%%@
+%%We might want to know more about the region between 249066163 and 249066197 on chromosome 1, or find other reads in this region. For this we will need a way of representing genomic ranges
+%%\end{frame}
 
 %%\begin{frame}{Intermission}
 
 %% \includemovie{QM6MNw7i6Ng.mp4}
 %%\end{frame}
 
-\section{Hands-on}
+%%\section{Hands-on}
 
-\begin{frame}{Intermission}
-Work through section 3 of the practical
-\end{frame}
+%%\begin{frame}{Intermission}
+%%Work through section 3 of the practical
+%%\end{frame}
 
 \section{Ranges}
 \subsection{IRanges}
@@ -776,22 +776,22 @@ tracks(pl, p2)
 @
 \end{frame}
 
-\begin{frame}[fragile]{Reducing}
-\begin{columns}
-\column{.5\textwidth}
-<<>>=
-ir
-@
-\column{.5\textwidth}
-<<>>=
-reduce(ir)
-@
-\end{columns}
-<<echo=FALSE,fig.height=3>>=
-p2 <- autoplot(reduce(ir)) + xlim(5,40)
-tracks(pl, p2)
-@
-\end{frame}
+%%\begin{frame}[fragile]{Reducing}
+%%\begin{columns}
+%%\column{.5\textwidth}
+%%<<>>=
+%%ir
+%%@
+%%\column{.5\textwidth}
+%%<<>>=
+%%reduce(ir)
+%%@
+%%\end{columns}
+%%<<echo=FALSE,fig.height=3>>=
+%%p2 <- autoplot(reduce(ir)) + xlim(5,40)
+%%tracks(pl, p2)
+%%@
+%%\end{frame}
 
 
 %%\begin{frame}[fragile]{Gaps}
@@ -969,23 +969,23 @@ gr
 \end{frame}
 
 
-\begin{frame}[fragile]{Reducing}
-<<eval=FALSE>>=
-reduce(gr)
-@
+%%\begin{frame}[fragile]{Reducing}
+%%%<<eval=FALSE>>=
+%%reduce(gr)
+%%@
 
-\begin{columns}[t]
-\column{.5\textwidth}
-<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
-autoplot(gr)+xlim(5,40) + ggtitle("Original")
-@
-\column{.5\textwidth}
-<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
-autoplot(reduce(gr)) + ggtitle("Reduced")
-@
-\end{columns}
+%%\begin{columns}[t]
+%%\column{.5\textwidth}
+%%<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+%%autoplot(gr)+xlim(5,40) + ggtitle("Original")
+%%@
+%%\column{.5\textwidth}
+%%<<fig=TRUE,dev='pdf', echo=FALSE,results='hide',fig.width=5, fig.height=5, out.width='.9\\linewidth'>>=
+%%autoplot(reduce(gr)) + ggtitle("Reduced")
+%%@
+%%\end{columns}
 
-\end{frame}
+%%\end{frame}
 
 
 
@@ -1022,47 +1022,47 @@ autoplot(reduce(gr)) + ggtitle("Reduced")
 
 %%\end{frame}
 
-\begin{frame}[fragile]{Naming conventions}
-Sometimes (well, often) different naming conventions are used for chromosome names
+%%\begin{frame}[fragile]{Naming conventions}
+%%Sometimes (well, often) different naming conventions are used for chromosome names
+%
+%%<<>>=
+%%seqlevels(gr)
 
-<<>>=
-seqlevels(gr)
+%%gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
+%%gr
 
-gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
-gr
+%%@
 
-@
+%%\end{frame}
 
-\end{frame}
+%%\begin{frame}[fragile]{Assigning metadata}
+%%GRanges objects can also have metadata associated with them
+%%<<>>=
+%%meta <- data.frame(SomeVals = runif(n=length(gr), 100,200),
+%%                   OtherVals = runif(n=length(gr), 0,1),
+%%                   SomeChars = sample(LETTERS,length(gr))
+%%)%
+%%mcols(gr) <- meta 
+%%@
+%%\end{frame}
 
-\begin{frame}[fragile]{Assigning metadata}
-GRanges objects can also have metadata associated with them
-<<>>=
-meta <- data.frame(SomeVals = runif(n=length(gr), 100,200),
-                   OtherVals = runif(n=length(gr), 0,1),
-                   SomeChars = sample(LETTERS,length(gr))
-)
-mcols(gr) <- meta 
-@
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%gr[1:5]
+%%@
+%%\end{frame}
 
-\begin{frame}[fragile]
-<<>>=
-gr[1:5]
-@
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%gr[values(gr)$SomeVals > 150]
+%%@
+%%\end{frame}
 
-\begin{frame}[fragile]
-<<>>=
-gr[values(gr)$SomeVals > 150]
-@
-\end{frame}
-
-\begin{frame}[fragile]
-<<>>=
-gr[order(values(gr)$OtherVals)]
-@
-\end{frame}
+%%\begin{frame}[fragile]
+%%<<>>=
+%%gr[order(values(gr)$OtherVals)]
+%%@
+%%\end{frame}
 
 %%\begin{frame}[fragile]
 %%GRanges can be split according to metadata
@@ -1080,11 +1080,11 @@ gr[order(values(gr)$OtherVals)]
 %%@
 %%\end{frame}
 
-\section{Hands-on}
+%%\section{Hands-on}
 
-\begin{frame}{Intermission}
-Work through section 4 of the practical
-\end{frame}
+%%\begin{frame}{Intermission}
+%%Work through section 4 of the practical
+%%\end{frame}
 
 \section{Dealing with aligned reads}
 
@@ -1209,9 +1209,103 @@ param=ScanBamParam(which=gr)))
 \item The genome can also be accessed using Ranges
 \end{itemize} 
 
-Now, work through Section 5 of the practical
+%Now, work through Section 5 of the practical
 \end{frame}
 
+
+
+\section{Transcript-centric annotation}
+
+\begin{frame}{GenomicFeatures}
+\begin{itemize}
+\item The GenomicFeatures package retrieves and manages transcript-related features from the UCSC Genome Bioinformatics and BioMart data resources
+\item Transcript metadata is stored in an TranscriptDb object
+\item The object maps 5’ and 3’ UTRS, protein coding sequences (CDS) and exons for a set of mRNA transcripts to their associated genome
+\item SQLite database used to manage relationships between transcripts, exons, CDS and gene identifiers
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Pre-built packages}
+
+
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
+
+@
+
+A full list of packages is available on the BioC website
+<<>>=
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+@
+Name of package indicates the organism, transcript source and genome build
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+<<>>=
+txdb
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Grouping Genes}
+A function exists to do this efficiently
+<<>>=
+exons <- exonsBy(txdb, "gene")
+is(exons)
+length(exons)
+@
+see also transcriptsBy, intronsByTranscript, fiveUTRsByTranscript, threeUTRsByTranscript
+\end{frame}
+
+\begin{frame}[fragile]
+The result can be subset by Gene ID (entrez)
+<<>>=
+exons[["673"]]
+@
+
+\end{frame}
+
+
+
+\begin{frame}{Implications}
+\begin{itemize}
+
+\item We now have a way of retrieving transcript and exon locations as GRanges.
+\item Any function that uses a GRanges object can easily interact with gene locations
+\begin{itemize}
+
+\item{Reading subset of a bam file}
+\item{Counting overlaps}
+\item{Retrieving genome sequence}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Examples}
+Retrieve the subset of reads that overlap a particular gene.
+First, return the positional information about the gene as a GRanges object
+           
+<<warning=FALSE>>=
+gr <- exons[["49"]]
+@
+Pass the GRanges object into the readGAlignments function
+<<echo=FALSE>>=
+suppressPackageStartupMessages(library(GeneticsHTSCourse2013))  
+mybam <-"exampleData//NA19914.chr22.bam"
+gr <- renameSeqlevels(gr, c("chr22"= "22"))
+@  
+
+<<warning>>=
+system.time(bam.sub <- readGAlignments(file = mybam,
+    use.names = TRUE, param = ScanBamParam(which = gr)))             
+@
+\end{frame}
 
 %%\begin{frame}{To be continued...}
 %%\begin{itemize}
