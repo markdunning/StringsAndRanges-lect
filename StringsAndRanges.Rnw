@@ -8,13 +8,14 @@
 \usepackage{media9}
 \begin{document}
 
+
 \pgfdeclareimage[height=0.5cm]{university-logo}{images/CRUK_CAMBRIDGE_I_Pos_RGB_300}
 \logo{\pgfuseimage{university-logo}}
 
 
-\title{Strings and Ranges in R and Bioconductor}
-\author{Mark Dunning}
-\date{12 November 2014}
+\title{Representing sequencing data in R and Bioconductor}
+\author{Mark Dunning, Bioinformatics Training Coordinator}
+\date{1 June 2015}
 \institute[Bioinformatics Core] % (optional, but mostly needed)
 {
 
@@ -356,7 +357,11 @@ translate(myseq[1:4,])
 <<message=FALSE,warning=FALSE>>=
 library(BSgenome)
 head(available.genomes())
-available.genomes()[23:25]
+@
+Various versions of the human genome
+<<echo=FALSE>>=
+ag <- available.genomes()
+ag[grep("Hsapiens",ag)]
 @
 
 \end{frame}
@@ -404,10 +409,10 @@ reverseComplement(subseq(tp53, 1000,2000))
 Later, we will show how the sequences for genomic features can be extracted
 \end{frame}
 
-%%\section{Hands-on}
-%%\begin{frame}{Intermission}
-%%Work through section 2 of the practical
-%%\end{frame}
+\section{Hands-on}
+\begin{frame}{Intermission}
+Work through section 2 of the practical
+\end{frame}
 
 \section{Representing sequencing reads}
 
@@ -581,11 +586,11 @@ write.XStringSet(...)
 %% \includemovie{QM6MNw7i6Ng.mp4}
 %%\end{frame}
 
-%%\section{Hands-on}
+\section{Hands-on}
 
-%%\begin{frame}{Intermission}
-%%Work through section 3 of the practical
-%%\end{frame}
+\begin{frame}{Intermission}
+Work through section 3 of the practical
+\end{frame}
 
 \section{Ranges}
 \subsection{IRanges}
@@ -671,7 +676,7 @@ ir[width(ir)==5]
 
 \begin{frame}{Common Operations}
 \begin{itemize}
-\item Intre-range
+\item Intra-range
 \begin{itemize}
 \item  shift - move ranges by specified amount
 \item resize - change width, anchoring start, end or mid flank - Regions adjacent to start or end
@@ -1080,11 +1085,11 @@ gr
 %%@
 %%\end{frame}
 
-%%\section{Hands-on}
+\section{Hands-on}
 
-%%\begin{frame}{Intermission}
-%%Work through section 4 of the practical
-%%\end{frame}
+\begin{frame}{Intermission}
+Work through section 4 of the practical
+\end{frame}
 
 \section{Dealing with aligned reads}
 
@@ -1209,110 +1214,9 @@ param=ScanBamParam(which=gr)))
 \item The genome can also be accessed using Ranges
 \end{itemize} 
 
-%Now, work through Section 5 of the practical
+Now, work through Section 5 of the practical
 \end{frame}
 
-
-
-\section{Transcript-centric annotation}
-
-\begin{frame}{GenomicFeatures}
-\begin{itemize}
-\item The GenomicFeatures package retrieves and manages transcript-related features from the UCSC Genome Bioinformatics and BioMart data resources
-\item Transcript metadata is stored in an TranscriptDb object
-\item The object maps 5’ and 3’ UTRS, protein coding sequences (CDS) and exons for a set of mRNA transcripts to their associated genome
-\item SQLite database used to manage relationships between transcripts, exons, CDS and gene identifiers
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}[fragile]{Pre-built packages}
-
-
-<<echo=FALSE>>=
-suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
-
-@
-
-A full list of packages is available on the BioC website
-<<>>=
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-@
-Name of package indicates the organism, transcript source and genome build
-\end{frame}
-
-
-\begin{frame}[fragile]
-
-<<>>=
-txdb
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]{Grouping Genes}
-A function exists to do this efficiently
-<<>>=
-exons <- exonsBy(txdb, "gene")
-is(exons)
-length(exons)
-@
-see also transcriptsBy, intronsByTranscript, fiveUTRsByTranscript, threeUTRsByTranscript
-\end{frame}
-
-\begin{frame}[fragile]
-The result can be subset by Gene ID (entrez)
-<<>>=
-exons[["673"]]
-@
-
-\end{frame}
-
-
-
-\begin{frame}{Implications}
-\begin{itemize}
-
-\item We now have a way of retrieving transcript and exon locations as GRanges.
-\item Any function that uses a GRanges object can easily interact with gene locations
-\begin{itemize}
-
-\item{Reading subset of a bam file}
-\item{Counting overlaps}
-\item{Retrieving genome sequence}
-\end{itemize}
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}[fragile]{Examples}
-Retrieve the subset of reads that overlap a particular gene.
-First, return the positional information about the gene as a GRanges object
-           
-<<warning=FALSE>>=
-gr <- exons[["49"]]
-@
-Pass the GRanges object into the readGAlignments function
-<<echo=FALSE>>=
-suppressPackageStartupMessages(library(GeneticsHTSCourse2013))  
-mybam <-"exampleData//NA19914.chr22.bam"
-gr <- renameSeqlevels(gr, c("chr22"= "22"))
-@  
-
-<<warning>>=
-system.time(bam.sub <- readGAlignments(file = mybam,
-    use.names = TRUE, param = ScanBamParam(which = gr)))             
-@
-\end{frame}
-
-%%\begin{frame}{To be continued...}
-%%\begin{itemize}
-%%\item{Tomorrow, we will go through an RNA-seq analysis workflow}
-%%\item{We will then look how to relate the regions of interest back to the genome}
-%%\end{itemize}
-%%\end{frame}
 
 
 
