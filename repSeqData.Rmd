@@ -118,7 +118,15 @@ Need representation of genomic regions of interest
 # Representing DNA sequences
 
 ## Strings in base R
-- We can represent sequences of A, T, C, G in 'base' R. Several useful operations are possible
+
+- The '*character*' is one of the basic data types in R
+    + we can create vectors of characters
+```{r}
+cvec <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
+cvec
+```
+
+- We can of course represent sequences of A, T, C, G in 'base' R. Several useful operations are possible
 
 ```{r echo=FALSE}
 rand <- sapply(1:100, function(x) paste(sample(c("A", "T", 
@@ -197,9 +205,27 @@ head(as.character(myseq))
 width(myseq) > 19
 ```
 
+## More advanced subsetting
 
+This expression can be put inside the `[]` to extract the elements that we want
 ```{r}
 myseq[width(myseq)>19]
+```
+
+## More advanced subsetting
+
+- Sometimes we want to find sequences that start with a particular motif
+    + We can take advantage of the `subseq` function
+
+```{r}
+subseq(myseq, 1, 3)
+```
+
+
+## More advanced subsetting
+
+```{r}
+myseq[subseq(myseq,1,3) == "TTC"]
 ```
 
 
@@ -208,11 +234,18 @@ myseq[width(myseq)>19]
 Some useful string operation functions are provided
 
 ```{r}
-alphabetFrequency(myseq[1:4,], baseOnly=TRUE)
 af <- alphabetFrequency(myseq, baseOnly=TRUE)
+head(af)
+```
+
+## Letter frequencies
+
+```{r}
 myseq[af[,1] ==0,]
 boxplot(af)
+
 ```
+
 
 ## More-specialised features
 
@@ -240,7 +273,7 @@ ag[grep("Hsapiens",ag)]
 
 ## The latest human genome
 
-```{r}
+```{r message=FALSE}
 library(BSgenome.Hsapiens.UCSC.hg19)
 hg19 <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
 hg19
@@ -424,7 +457,7 @@ Work through section 3 of the practical
 
 Suppose we want to capture information on the following intervals
 
-```{r}
+```{r echo=FALSE,message=FALSE}
 library(ggbio)
 ir <- IRanges(start = c(7,9,12,14,22:24), 
               end=c(15,11,12,18,26,27,28))
@@ -490,6 +523,9 @@ ir
 shift(ir, 5)
 ```
 
+## Shifting
+
+
 ```{r echo=FALSE}
 p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
 tracks(pl, p2)
@@ -504,6 +540,8 @@ ir
 shift(ir, 7:1)
 ```
 
+## Shifting
+
 ```{r echo=FALSE}
 p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1"))+geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
 tracks(pl, p2)
@@ -517,6 +555,7 @@ e.g. trimming reads
 ir
 resize(ir,3)
 ```
+## Resize
 
 ```{r echo=FALSE}
 p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
@@ -529,6 +568,7 @@ tracks(pl, p2)
 ir
 resize(ir,3,fix="end")
 ```
+## Resize
 
 ```{r echo=FALSE}
 p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
@@ -537,7 +577,11 @@ tracks(pl, p2)
 
 
 ## Coverage
-coverage returns a *Run Length Encoding* - an efficient representation of repeated values
+
+- Often we want to know how much sequencing we have at particular positions
+    + i.e. depth of coverage
+
+`coverage` returns a *Run Length Encoding* - an efficient representation of repeated values
 
 ```{r}
 cvg <- coverage(ir)
@@ -557,12 +601,15 @@ tracks(pl,p2)
 
 e.g. counting
 
+- lets start be defining a new set of ranges
+
 ```{r}
 ir3 <- IRanges(start = c(1, 14, 27), end = c(13,
     18, 30))
 ir3
 
 ```
+## Overlaps
 
 ```{r echo=FALSE}
 p2 <- autoplot(ir3) + xlim(5,40)
@@ -573,6 +620,11 @@ tracks(pl,p2)
 
 ## Overlaps
 
+- The terminology of overlapping defines a *query* and a *subject*
+- The `findOverlaps` function is used for overlap
+    + the output isn't immediately obvious
+    + require accessor functions to get the data; `queryHits` and `subjectHits`
+    
 ```{r}
 query <- ir
 subject <- ir3
@@ -580,17 +632,43 @@ ov <- findOverlaps(query, subject)
 ov
 ```
 
+## queryHits
+
+- `queryHits` returns *indices* from the ***query***
+    + each query may overlap with many in the subject
 ```{r}
-query[queryHits(ov)]
-subject[subjectHits(ov)]
+queryHits(ov)
+```
+- `subjectHits` returns *indices* from the ***subject***
+    + each subject range may overlap with many in the query
+```{r}
+subjectHits(ov)
+```
+- e.g. `r queryHits(ov)[1]` from the query overlaps with `r subjectHits(ov)[1]` from the subject
+- `r queryHits(ov)[2]` from the query overlaps with `r subjectHits(ov)[2]` from the subject
+    + etc
+    
+```{r}
+query[queryHits(ov)[1]]
+subject[subjectHits(ov)[1]]
+
 ```
 
-## View Results
+## Caution
+- The order is important
+```{r}
+findOverlaps(query,subject)
+findOverlaps(subject,query)
 
-```{r echo=FALSE}
-pl2 <- autoplot(ir3)
-p2 <- autoplot(unique(query[queryHits(ov)]),fill=brewer.pal(n=length(ir),"Set1")[-5])
-tracks(pl, pl2, p2)
+```
+
+
+## Counting
+
+- If we just wanted to count the number of overlaps for each range, we can use `countOverlaps`
+```{r}
+countOverlaps(query,subject)
+countOverlaps(subject,query)
 ```
 
 ## Modify overlap criteria
@@ -602,18 +680,22 @@ findOverlaps(query,subject,type="within")
 
 ## Intersection
 
+- Rather than counting, we might want to know which positions are in common
 ```{r}
 intersect(ir,ir3)
 
 ```
 
 ```{r echo=FALSE}
+pl2 <- autoplot(ir3)
 p2 <- autoplot(intersect(ir,ir3))
 tracks(pl,pl2,p2)
 
 ```
 
 ## Subtraction
+
+- Or which positions are missing
 
 ```{r}
 setdiff(ir,ir3)
@@ -643,25 +725,11 @@ gr
 reduce(gr)
 ```
 
-```{r}
-autoplot(gr)+xlim(5,40) + ggtitle("Original")
-autoplot(reduce(gr)) + ggtitle("Reduced")
+```{r echo=FALSE}
+tracks(autoplot(gr)+xlim(5,40) + ggtitle("Original"), autoplot(reduce(gr)) + ggtitle("Reduced"))
 ```
 
 
-
-## Naming conventions
-Sometimes (well, often) different naming conventions are used for chromosome names
-
-```{r}
-seqlevels(gr)
-```
-
-```{r}
-gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
-gr
-
-```
 
 ## Intermission
 
@@ -741,6 +809,21 @@ bam.sub <- bam[bam %over% gr]
 bam.sub
 
 ```
+
+
+## Chromosome naming conventions
+Sometimes (well, often) different naming conventions are used for chromosome names
+
+```{r}
+seqlevels(gr)
+```
+
+```{r}
+gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
+gr
+
+```
+
 
 ## Read subset of reads from file
 
