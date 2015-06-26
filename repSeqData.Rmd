@@ -12,38 +12,20 @@ output: slidy_presentation
 - By the end of this session you should be familiar with
 - How DNA sequences are represented in R
 - How to create and compare genomic intervals
-- How to read fastq and bam files into R
+- How to read bam files into R
 - Interactions between the packages
-
-## Motivation
-
-Sequencing produces millions of reads. e.g in fastq format
-
-```{r message=FALSE,echo=FALSE}
-suppressPackageStartupMessages(library(GenomicRanges))
-suppressPackageStartupMessages(library(GenomicAlignments))
-library(RColorBrewer)
-mybam <- "exampleData/HG00096.chr22.bam"
-gr <- GRanges("22", IRanges(start = 33451818, end=33842866))
-bam.sub2 <- readGAlignments(file=mybam,use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
-
-for(i in 1:6){
-cat(paste("Read",i,"\n"))
-cat(paste(values(bam.sub2)$seq[i]),"\n")    
-}
-```
-
-These need to be compared to the genome (aligned) and we record the chromosome and coordinates that each sequence aligns to, often with quality information. 
 
 ## Something
 
-Need consistent representation of (1) genome and (2) reads
+Need consistent representation of the genome and reads
 
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(GenomicRanges))
 suppressPackageStartupMessages(library(Gviz))
 suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg18))
-
+suppressPackageStartupMessages(library(GenomicAlignments))
+library(RColorBrewer)
+mybam <- "exampleData/HG00096.chr22.bam"
 gr <- GRanges("22", IRanges(start = 33451818, end=33842866))
 bam.sub2 <- readGAlignments(file=mybam,use.names=TRUE, param=ScanBamParam(which=gr,what="seq"))
 
@@ -67,13 +49,15 @@ tracks <- c(gtrack,reads, strack)
 plotTracks(tracks)
 ```
 
-Need a way of representing alignments and associated qualities
+- Need a way of representing alignments and associated qualities
+
 
 ## Associating with Genomic Features
 
-
-We will often want to find information about the genomic region around the reads
-
+- We will often want to find information about the genomic region around the reads
+    + genes, transcripts, exons
+    + genomic sequence
+    
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(TxDb.Hsapiens.UCSC.hg19.knownGene))
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
@@ -108,342 +92,7 @@ plotTracks(list(dTrack4,txTr),from=2266,to=51954 )
 Need representation of genomic regions of interest
 
 
-## Packages we will meet
-
-- Biostrings - Manipulation of DNA sequences in R
-- ShortRead - Input / output of fastq files and quality assessment
-- GRanges - Functions for representing ranges with sequence and strand information
-- GenomicAlignments - Input of bam files
-
-# Representing DNA sequences
-
-## Strings in base R
-
-- The '*character*' is one of the basic data types in R
-    + we can create vectors of characters
-```{r}
-cvec <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
-cvec
-```
-
-- We can of course represent sequences of A, T, C, G in 'base' R. Several useful operations are possible
-
-```{r echo=FALSE}
-rand <- sapply(1:100, function(x) paste(sample(c("A", "T", 
-          "G", "C"), sample(10:20),replace=TRUE),
-          collapse=""))
-randomStrings <- rand
-myseq <- rand[1:2]
-```
-
-```{r}
-myseq 
-gsub("A", "X", myseq)
-
-nchar(myseq)
-substr(myseq, 1,3)
-```
-
-
-## Biostrings
-However, the Biostrings package is specifically-designed for biological sequences
-
-- It introduces a new object type, the `DNAStringSet` for storing sequences
-- We can create an object of this type by using the `DNAStringSet` function
-- Typing the name of your new object prints a summary to the screen
-
-```{r}
-library(Biostrings)
-myseq <- DNAStringSet(randomStrings)
-myseq
-```
-
-## Object structure
-- The definition of the object is not for the faint-hearted
-```{r}
-str(myseq)
-```
-
-
-##Biostrings operations
-- However, we can treat a `Biostrings` object like a standard vector
-    + Remember, square brackets `[` to subset
-    + Inside the brackets, put a numeric vector to specify the `indices` that you want values for
-    + e.g. get the first five strings in the object using the `:` shortcut
-
-```{r}
-myseq[1:5]
-```
-
-## Subsetting operations
-
-- There are a myriad of different ways to subset
-```{r}
-myseq[c(1,2,3,4)]
-myseq[seq(2,20,4)]
-myseq[sample(1:20,3)]
-```
-
-
-## Accessor functions
-
-- If we want to do a calculation on the width and sequences themselves, we can extract them with `width` and `as.character`
-    + the result is a vector
-```{r}
-width(myseq)
-
-head(as.character(myseq))
-```
-
-## More advanced subsetting
-
-- Recall that '*logical*' vectors can be used in subsetting
-    + i.e. `TRUE` or `FALSE`
-- Such a vector can be derived using a comparison operator
-    + `<`, `>`, `==`
-```{r}
-width(myseq) > 19
-```
-
-## More advanced subsetting
-
-This expression can be put inside the `[]` to extract the elements that we want
-```{r}
-myseq[width(myseq)>19]
-```
-
-## More advanced subsetting
-
-- Sometimes we want to find sequences that start with a particular motif
-    + We can take advantage of the `subseq` function
-
-```{r}
-subseq(myseq, 1, 3)
-```
-
-
-## More advanced subsetting
-
-```{r}
-myseq[subseq(myseq,1,3) == "TTC"]
-```
-
-
-
-## Other useful operations
-Some useful string operation functions are provided
-
-```{r}
-af <- alphabetFrequency(myseq, baseOnly=TRUE)
-head(af)
-```
-
-## Letter frequencies
-
-```{r}
-myseq[af[,1] ==0,]
-boxplot(af)
-
-```
-
-
-## More-specialised features
-
-```{r warning=FALSE}
-reverse(myseq)
-reverseComplement(myseq)
-translate(myseq)
-
-```
-
-# Representing the genome
-
-##The genome as a string - `BSgenome`
-
-```{r}
-library(BSgenome)
-head(available.genomes())
-```
-Various versions of the human genome
-
-```{r}
-ag <- available.genomes()
-ag[grep("Hsapiens",ag)]
-```
-
-## The latest human genome
-
-```{r message=FALSE}
-library(BSgenome.Hsapiens.UCSC.hg19)
-hg19 <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-hg19
-```
-
-## Retrieving sequences
-
-```{r}
-tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
-tp53
-as.character(tp53)
-alphabetFrequency(tp53,baseOnly=TRUE)
-subseq(tp53, 1000,1010)
-
-```
-
-## Timings
-
-
-Don't need to load the whole genome into memory, so reading a particular sequence is ***fast***
-
-```{r}
-system.time(tp53 <- getSeq(hg19, "chr17", 7577851, 7598063))
-```
-
-## Manipulating sequences
-
-We can now use Biostrings operations to manipulate the sequence
-
-```{r}
-translate(subseq(tp53, 1000,1010))
-reverseComplement(subseq(tp53, 1000,2000))
-```
-
-
-Later, we will show how the sequences for genomic features can be extracted
-
-## Intermission
-
-Work through section 2 of the practical
-
-# Representing sequencing reads
-
-## Fastq recap
-
-```{r echo=FALSE}
-path.to.my.fastq <- "exampleData//subset.fq"
-```
-
-Recall that sequence reads are represented in text format
-
-```{r}
-readLines(path.to.my.fastq ,n=10)
-```
-
-It should be possible to represent these as `Biostrings` objects
-
-## The `ShortRead` package
-
-Has convenient functions for reading fastq files and performing quality assessment
-
-```{r}
-library(ShortRead)
-fq <- readFastq(path.to.my.fastq)
-fq
-```
-
-## reads and qualities
-
-```{r}
-sread(fq)[1:3,]
-quality(fq)[1:3,]
-```
-
-## Read names
-
-```{r}
-id(fq)[1:3]
-```
-
-```{r echo=FALSE}
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(reshape))
-```
-
-
-```{r}
-abc <- alphabetByCycle(sread(fq))
-abc[1:4, 1:8]
-```
-
-## QA plots
-
-```{r echo=FALSE}
-ggplot(melt(abc[1:4,]), aes(x = cycle, y = value, col=alphabet,label=alphabet)) + geom_point() + geom_text() + ylab("Base Count")
-```
-
-
-## Converting quality scores
-
-Phred quality scores are integers from 0 to 50 that are stored as ASCII characters after adding 33. The base R functions `rawToChar` and `charToRaw` can be used to convert
-
-```{r}
-phred <- 1:9
-phreda <- paste(sapply(as.raw((phred)+33), rawToChar), collapse=""); phreda
-as.integer(charToRaw(phreda))-33
-round(10^((-(as.integer(charToRaw(phreda))-33)/10)),2)
-```
-
-## someth
-
-```{r}
-quality(fq)[1]
-as.integer(charToRaw(as.character(quality(fq)[1]@quality)))-33
-as.integer(charToRaw(">>>>>>>>>>>>>>>>>>>>><>>>>>+>+:48><"))-33
-```
-
-## A shortcut
-
-```{r}
-qual <- as(quality(fq), "matrix")
-dim(qual)
-qual[1,]
-```
-
-## Quality plot
-
-```{r}
-plot(colMeans(qual), type="b")
-```
-
-## Read Occurrence
-
-```{r}
-tbl <- tables(fq)
-names(tbl)
-tbl$top[1:5]
-head(tbl$distribution)
-```
-
-
-`r tbl$distribution$nReads[1]` sequences appear only once, `r tbl$distribution$nReads[2]` appear twice, etc.
-
-## Trimming
-
-
-We can trim the reads if required
-
-```{r}
-subseq(sread(fq), 1, 10)
-```
-
-or search for adaptor sequence
-
-```{r eval=FALSE}
-grep(myAdaptor, sread(fq))
-
-```
-
-And write the resulting files
-
-```{r eval=FALSE}
-write.XStringSet(...)
-```
-
-## Intermission
-
-Work through section 3 of the practical
-
-# Genome Interval
+# Core data-type 1: Genome Intervals
 
 ## IRanges
 
@@ -452,6 +101,19 @@ Work through section 3 of the practical
     + start $\le$ end
 - Ranges are a common scaffold for many genomic analyses
 - Ranges can be associated with genomic information (e.g. gene name) or data derived from analysis (e.g. counts)
+- The `IRanges` package in Bioconductor allows us to work with intervals
+    + one of the aims of Bioconductor is to encourage core object-types and functions
+    + `IRanges` is an example of this
+
+## IRanges is crucial for many packages
+
+Just some of the packages that *depend* on [IRanges](http://bioconductor.org/packages/release/bioc/html/IRanges.html)
+
+![iranges-depends](images/iranges-depends.png)
+
+## IRanges paper
+
+![bioc paper](images/ranges-paper.png)
 
 ## Example
 
@@ -468,40 +130,91 @@ pl
 
 ## Creating the object
 
+- The `IRanges` function from the `IRanges` package is used to *construct* a new object
+    + think `data.frame`, `vector` or `matrix` 
+    + it's structure is quite unlike anything we've seen before
+    
 ```{r}
 library(IRanges)
 ir <- IRanges(
 start = c(7,9,12,14,22:24), 
 end=c(15,11,12,18,26,27,28))
+str(ir)
+```
+
+## Display the object
+
+- Typing the name of the object will print a summary of the object to the screen
+    + useful compared display methods for data frames, which print the whole object
+- the square brackets `[]` should give a hint about how to access the data...
+
+```{r}
 ir
 ```
 
+## Ranges as vectors
+- `IRanges` can be treated as if they were *vectors*
+    + no new rules to learn
+        + if we can subset vectors, we can subset ranges
+    + vector operations are efficient
+    + Remember, square brackets `[` to subset
+    + Inside the brackets, put a numeric vector to specify the `indices` that you want values for
+        + e.g. get the first two intervals in the object using the `:` shortcut
+
+```{r}
+ir[1:2]
+ir[c(2,4,6)]
+```
+
 ## Accessing the object
+- If we want to extract the properties of the object, the package authors have provided some useful functions
+    + we call these *accessor* functions
+    + We don't need to know the details of how the objects and implemented to access the data
+    + the authors are free to change the implementation at any time
+        + we shouldn't notice the difference
+    + the result is a vector with the same length as the number of intervals
+        
 ```{r}
 start(ir)
 end(ir)
 width(ir)
 ```
 
-
-## Ranges as vectors
+## More complex subsetting
+- Recall that '*logical*' vectors can be used in subsetting
+    + i.e. `TRUE` or `FALSE`
+- Such a vector can be derived using a comparison operator
+    + `<`, `>`, `==`
 
 ```{r}
-ir
-ir[1:2]
+width(ir) == 5
 ir[width(ir)==5]
 ```
 
-## Common Operations
+## More complex subsetting
 
-- Intra-range
-    + shift - move ranges by specified amount
-    + resize - change width, anchoring start, end or mid flank - Regions adjacent to start or end
-    + flank - flanking regions
-- Inter-range
-    + reduce
-    + gaps
-    + coverage
+```{r}
+start(ir) > 10
+end(ir) < 27
+ir[start(ir) > 10]
+```
+
+## More complex subsetting
+
+- Multiple logical vectors can be combined using `&` (and), `|` (or)
+    + eg intervals that start after 10, **and** before 27
+    
+```{r}
+ir[end(ir) < 27]
+ir[start(ir) > 10 & end(ir) < 27]
+
+```
+
+
+# Manipulating Ranges
+
+## Lots of common use-cases are implemented
+![operations](images/ranges-fns.png)
 
 ## Shifting
 We could do this the long way
@@ -586,7 +299,7 @@ tracks(pl, p2)
 ```{r}
 cvg <- coverage(ir)
 cvg
-as.vector(cvg[1:12])
+as.vector(cvg)
 
 ```
 
@@ -597,9 +310,12 @@ p2 <- autoplot(coverage(ir),binwidth=1) + ggtitle("Coverage")
 tracks(pl,p2)
 ```
 
-## Overlaps
-
+## Overlapping
 e.g. counting
+- The terminology of overlapping defines a *query* and a *subject*
+![overlaps](images/ranges-paper-overlaps.png)
+
+## Overlaps
 
 - lets start be defining a new set of ranges
 
@@ -620,7 +336,7 @@ tracks(pl,p2)
 
 ## Overlaps
 
-- The terminology of overlapping defines a *query* and a *subject*
+
 - The `findOverlaps` function is used for overlap
     + the output isn't immediately obvious
     + require accessor functions to get the data; `queryHits` and `subjectHits`
@@ -641,6 +357,9 @@ queryHits(ov)
 ```
 - `subjectHits` returns *indices* from the ***subject***
     + each subject range may overlap with many in the query
+    
+##subjectHits    
+    
 ```{r}
 subjectHits(ov)
 ```
@@ -708,6 +427,269 @@ tracks(pl,pl2,p2)
 
 ```
 
+
+## Intermission
+
+Work through section 4 of the practical
+
+
+# Core data-type 1: DNA sequences
+
+## Strings in base R
+
+- The '*character*' is one of the basic data types in R
+    + we can create vectors of characters
+```{r}
+cvec <- c("The", "quick", "brown", "fox", "jumps", "over" ,"the","lazy", "dog")
+cvec
+```
+
+- We can of course represent sequences of A, T, C, G in 'base' R. Several useful operations are possible
+
+```{r echo=FALSE}
+rand <- sapply(1:100, function(x) paste(sample(c("A", "T", 
+          "G", "C"), sample(10:20),replace=TRUE),
+          collapse=""))
+randomStrings <- rand
+myseq <- rand[1:2]
+```
+
+```{r}
+myseq 
+gsub("A", "X", myseq)
+
+nchar(myseq)
+substr(myseq, 1,3)
+```
+
+
+## Biostrings
+However, the Biostrings package is specifically-designed for biological sequences
+
+- It introduces a new object type, the `DNAStringSet` for storing sequences
+- We can create an object of this type by using the `DNAStringSet` function
+- Typing the name of your new object prints a summary to the screen
+
+```{r}
+library(Biostrings)
+myseq <- DNAStringSet(randomStrings)
+myseq
+```
+
+## Object structure
+- The definition of the object is not for the faint-hearted
+```{r}
+str(myseq)
+```
+
+
+##Biostrings operations
+- However, we can treat a `Biostrings` object like a standard vector
+
+
+```{r}
+myseq[1:5]
+```
+
+## Subsetting operations
+
+- There are a myriad of different ways to subset
+```{r}
+myseq[c(1,2,3,4)]
+myseq[seq(2,20,4)]
+myseq[sample(1:20,3)]
+```
+
+
+## Accessor functions
+
+- If we want to do a calculation on the width and sequences themselves, we can extract them with `width` and `as.character`
+    + the result is a vector
+```{r}
+width(myseq)
+
+head(as.character(myseq))
+```
+
+## More advanced subsetting
+
+
+```{r}
+width(myseq) > 19
+```
+
+## More advanced subsetting
+
+This expression can be put inside the `[]` to extract the elements that we want
+```{r}
+myseq[width(myseq)>19]
+```
+
+## More advanced subsetting
+
+- Sometimes we want to find sequences that start with a particular motif
+    + We can take advantage of the `subseq` function
+
+```{r}
+subseq(myseq, 1, 3)
+```
+
+
+## More advanced subsetting
+
+```{r}
+myseq[subseq(myseq,1,3) == "TTC"]
+```
+
+
+
+## Other useful operations
+Some useful string operation functions are provided
+
+```{r}
+af <- alphabetFrequency(myseq, baseOnly=TRUE)
+head(af)
+```
+
+## Letter frequencies
+
+```{r}
+myseq[af[,1] ==0,]
+boxplot(af)
+
+```
+
+
+## More-specialised features
+
+```{r warning=FALSE}
+reverse(myseq)
+reverseComplement(myseq)
+translate(myseq)
+
+```
+
+
+
+## Fastq recap
+
+```{r echo=FALSE}
+path.to.my.fastq <- "exampleData//subset.fq"
+```
+
+Recall that sequence reads are represented in text format
+
+```{r}
+readLines(path.to.my.fastq ,n=10)
+```
+
+It should be possible to represent these as `Biostrings` objects
+
+## The `ShortRead` package
+One of the first NGS packages in Bioconductor
+
+- Has convenient functions for reading fastq files and performing quality assessment
+    + In practice, we would use other tools for processing fastq files
+    + e.g. fastqc for quality assessment
+```{r}
+library(ShortRead)
+fq <- readFastq(path.to.my.fastq)
+fq
+```
+
+## reads and qualities
+
+```{r}
+sread(fq)[1:3]
+quality(fq)[1:3]
+```
+
+## Read names
+
+```{r}
+id(fq)[1:3]
+```
+
+```{r echo=FALSE}
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(reshape))
+```
+
+
+```{r}
+abc <- alphabetByCycle(sread(fq))
+abc[1:4, 1:8]
+```
+
+## QA plots
+
+```{r echo=FALSE}
+ggplot(melt(abc[1:4,]), aes(x = cycle, y = value, col=alphabet,label=alphabet)) + geom_point() + geom_text() + ylab("Base Count")
+```
+
+## Quality plot
+
+```{r}
+qual <- as(quality(fq), "matrix")
+dim(qual)
+qual[1,]
+plot(colMeans(qual), type="b")
+```
+
+
+# Practical application - Representing the genome
+
+##The genome as a string - `BSgenome`
+
+```{r}
+library(BSgenome)
+head(available.genomes())
+```
+Various versions of the human genome
+
+```{r}
+ag <- available.genomes()
+ag[grep("Hsapiens",ag)]
+```
+
+## The latest human genome
+
+```{r message=FALSE}
+library(BSgenome.Hsapiens.UCSC.hg19)
+hg19 <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+hg19
+```
+
+## Retrieving sequences
+
+```{r}
+tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
+tp53
+as.character(tp53)
+alphabetFrequency(tp53,baseOnly=TRUE)
+subseq(tp53, 1000,1010)
+
+```
+
+## Timings
+
+
+Don't need to load the whole genome into memory, so reading a particular sequence is ***fast***
+
+```{r}
+system.time(tp53 <- getSeq(hg19, "chr17", 7577851, 7598063))
+```
+
+## Manipulating sequences
+
+We can now use Biostrings operations to manipulate the sequence
+
+```{r}
+translate(subseq(tp53, 1000,1010))
+reverseComplement(subseq(tp53, 1000,2000))
+```
+
+
 ## Introducing GRanges
 
 - GRanges provides infrastructure to manipulate genomic intervals in an efficient manner
@@ -719,23 +701,17 @@ gr
 
 ```
 
-## Per-chromosome operations
-
-```{r}
-reduce(gr)
-```
-
-```{r echo=FALSE}
-tracks(autoplot(gr)+xlim(5,40) + ggtitle("Original"), autoplot(reduce(gr)) + ggtitle("Reduced"))
-```
-
 
 
 ## Intermission
 
-Work through section 4 of the practical
+Work through section 2 of the practical
 
-# Aligned Reads
+
+
+# Practical application - Manipulating Aligned Reads
+
+
 
 ## Dealing with aligned reads
 
