@@ -10,8 +10,8 @@ output: slidy_presentation
 ## Aims
 
 - By the end of this session you should be familiar with
-- How DNA sequences are represented in R
 - How to create and compare genomic intervals
+- How DNA sequences are represented in R
 - How to read bam files into R
 - Interactions between the packages
 
@@ -38,9 +38,9 @@ tracks <- c(reads, strack)
 
 plotTracks(tracks)
 ```
-Reads come with quality score and IDs that also need to be captured
 
-## something
+
+##
 Often we are given the mapped location of reads
 
 ```{r echo=FALSE}
@@ -96,7 +96,7 @@ Need representation of genomic regions of interest
 
 ## IRanges
 
-- Genome is typically represented as linear sequence
+- A Genome is typically represented as linear sequence
 - Ranges are an ordered set of consecutive integers defined by a start and end position
     + start $\le$ end
 - Ranges are a common scaffold for many genomic analyses
@@ -145,7 +145,7 @@ str(ir)
 ## Display the object
 
 - Typing the name of the object will print a summary of the object to the screen
-    + useful compared display methods for data frames, which print the whole object
+    + useful compared to display methods for data frames, which print the whole object
 - the square brackets `[]` should give a hint about how to access the data...
 
 ```{r}
@@ -180,7 +180,7 @@ end(ir)
 width(ir)
 ```
 
-## More complex subsetting
+## More-complex subsetting
 - Recall that '*logical*' vectors can be used in subsetting
     + i.e. `TRUE` or `FALSE`
 - Such a vector can be derived using a comparison operator
@@ -191,7 +191,7 @@ width(ir) == 5
 ir[width(ir)==5]
 ```
 
-## More complex subsetting
+## More-complex subsetting
 
 ```{r}
 start(ir) > 10
@@ -199,7 +199,7 @@ end(ir) < 27
 ir[start(ir) > 10]
 ```
 
-## More complex subsetting
+## More-complex subsetting
 
 - Multiple logical vectors can be combined using `&` (and), `|` (or)
     + eg intervals that start after 10, **and** before 27
@@ -339,6 +339,8 @@ tracks(pl,p2)
 
 - The `findOverlaps` function is used for overlap
     + the output isn't immediately obvious
+    + length of output is the number of *hits*
+        + each hit is defined by a subject and query index
     + require accessor functions to get the data; `queryHits` and `subjectHits`
     
 ```{r}
@@ -356,44 +358,160 @@ ov
 queryHits(ov)
 ```
 - `subjectHits` returns *indices* from the ***subject***
-    + each subject range may overlap with many in the query
-    
-##subjectHits    
-    
+    + each subject range may overlap with many in the query    
 ```{r}
 subjectHits(ov)
 ```
 - e.g. `r queryHits(ov)[1]` from the query overlaps with `r subjectHits(ov)[1]` from the subject
-- `r queryHits(ov)[2]` from the query overlaps with `r subjectHits(ov)[2]` from the subject
-    + etc
+
+##Overlap example - First hit
+    
     
 ```{r}
 query[queryHits(ov)[1]]
 subject[subjectHits(ov)[1]]
-
 ```
 
-## Caution
-- The order is important
-```{r}
-findOverlaps(query,subject)
-findOverlaps(subject,query)
 
+```{r echo=FALSE, fig.height=3}
+fll <- rep("white", length(ir))
+fll[queryHits(ov)[1]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(ov)[1]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
+```
+
+## Overlap example - second hit
+
+```{r}
+query[queryHits(ov)[2]]
+subject[subjectHits(ov)[2]]
+```
+
+
+```{r echo=FALSE,fig.height=3}
+fll <- rep("white", length(ir))
+fll[queryHits(ov)[2]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(ov)[2]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
+```
+
+## Overlap example - Third hit
+
+```{r}
+query[queryHits(ov)[3]]
+subject[subjectHits(ov)[3]]
+```
+
+
+```{r echo=FALSE,fig.height=3}
+fll <- rep("white", length(ir))
+fll[queryHits(ov)[3]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(ov)[3]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
 
 ## Counting
 
 - If we just wanted to count the number of overlaps for each range, we can use `countOverlaps`
+    + result is a vector with length the number of intervals in query
+    + e.g. interval 1 in the query overlaps with `r countOverlaps(query,subject)[1]` intervals in the subject
+    
 ```{r}
 countOverlaps(query,subject)
+```
+- Order of arguments is important
+```{r}
 countOverlaps(subject,query)
 ```
 
+
 ## Modify overlap criteria
+
+- There are various ways of defining an overlap
+- We can be more stringent by stating that all positions need to be in common
+```{r}
+findOverlaps(query,subject,type="within")
+```
+
+
+```{r echo=FALSE,fig.height=3}
+fo <- findOverlaps(query,subject,type="within")
+
+fll <- rep("white", length(ir))
+fll[queryHits(fo)[1]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(fo)[1]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
+```
+
+
+## More stringent overlap
 
 ```{r}
 findOverlaps(query,subject,type="within")
+```
+
+
+```{r echo=FALSE,fig.height=3}
+fo <- findOverlaps(query,subject,type="within")
+
+fll <- rep("white", length(ir))
+fll[queryHits(fo)[2]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(fo)[2]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
+```
+
+## More strigent overlap
+
+
+```{r}
+findOverlaps(query,subject,type="within")
+```
+
+
+```{r echo=FALSE,fig.height=3}
+fo <- findOverlaps(query,subject,type="within")
+
+fll <- rep("white", length(ir))
+fll[queryHits(fo)[3]] <- "black"
+
+qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+
+fll <- rep("white", length(ir3))
+fll[subjectHits(fo)[3]] <- "black"
+
+subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
 
@@ -430,7 +548,7 @@ tracks(pl,pl2,p2)
 
 ## Intermission
 
-Work through section 4 of the practical
+Work through section 1 of the practical
 
 
 # Core data-type 1: DNA sequences
@@ -591,7 +709,7 @@ One of the first NGS packages in Bioconductor
 - Has convenient functions for reading fastq files and performing quality assessment
     + In practice, we would use other tools for processing fastq files
     + e.g. fastqc for quality assessment
-```{r}
+```{r, message=FALSE}
 library(ShortRead)
 fq <- readFastq(path.to.my.fastq)
 fq
@@ -606,10 +724,6 @@ quality(fq)[1:3]
 
 ## Read names
 
-```{r}
-id(fq)[1:3]
-```
-
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(reshape))
@@ -621,15 +735,13 @@ abc <- alphabetByCycle(sread(fq))
 abc[1:4, 1:8]
 ```
 
-## QA plots
-
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height=3}
 ggplot(melt(abc[1:4,]), aes(x = cycle, y = value, col=alphabet,label=alphabet)) + geom_point() + geom_text() + ylab("Base Count")
 ```
 
 ## Quality plot
 
-```{r}
+```{r fig.height=3}
 qual <- as(quality(fq), "matrix")
 dim(qual)
 qual[1,]
@@ -692,15 +804,30 @@ reverseComplement(subseq(tp53, 1000,2000))
 
 ## Introducing GRanges
 
-- GRanges provides infrastructure to manipulate genomic intervals in an efficient manner
+- `GRanges` are a special kind of `IRanges` object used to manipulate genomic intervals in an efficient manner
 - We can define a 'chromosome' for each range
+    + referred to as seqnames
+- we have the option to define a strand
+- need to supply a ranges object, as we saw before
 
-```{r}
+```{r message=FALSE}
+library(GenomicAlignments)
 gr <- GRanges(c("A","A","A","B","B","B","B"), ranges=ir)
 gr
-
 ```
 
+## Representing a gene
+
+- Creating an object to represent a particular gene is easy if we know its coordinates
+    + we will look at represening the full gene structure tomorrow
+        + e.g. exons, introns etc
+        
+```{r}
+mygene <- GRanges("chr17", ranges=IRanges(7577851, 7598063))
+myseq <- getSeq(hg19, mygene)
+myseq
+tp53
+```
 
 
 ## Intermission
@@ -716,7 +843,9 @@ Work through section 2 of the practical
 ## Dealing with aligned reads
 
 
-We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. `Rsamtools` provides an interface for doing this. But we will use the `readGAlignments` tool in `GenomicAlignments` which extracts the essential information from the bam file.
+We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. 
+- `Rsamtools` provides an interface for doing this. 
+- However, we will use the `readGAlignments` tool in `GenomicAlignments` which extracts the essential information from the bam file.
 
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(pasillaBamSubset))
@@ -726,13 +855,16 @@ mybam <- untreated3_chr4()
 options(width=60)
 ```
 
-```{r}
+```{r message=FALSE}
+library(GenomicAlignments)
 bam <- readGAlignments(mybam,use.name=TRUE)
 
 ```
+- `use.name` uses the read names as identifiers.
+- it can be quicker to say `use.name=FALSE`
 
 ## Representation of aligned reads
-The result looks a lot like a GRanges object. In fact, a lot of the same operations can be use
+The result looks a lot like a GRanges object. In fact, a lot of the same operations can be uses
 
 ```{r}
 bam
@@ -801,10 +933,10 @@ gr
 ```
 
 
-## Read subset of reads from file
+## More control over reading
 
-
-Quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the param argument.
+- `readGAlignments`
+Quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the `param` argument.
 
 ```{r}
 system.time(bam.sub <-
@@ -824,4 +956,4 @@ param=ScanBamParam(which=gr)))
 - The genome can also be accessed using Ranges
 
 
-Now, work through Section 5 of the practical
+Now, work through Section 3 of the practical
