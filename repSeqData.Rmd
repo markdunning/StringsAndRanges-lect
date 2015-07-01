@@ -122,8 +122,8 @@ Suppose we want to capture information on the following intervals
 ```{r echo=FALSE,message=FALSE}
 library(ggbio)
 ir <- IRanges(start = c(7,9,12,14,22:24), 
-              end=c(15,11,12,18,26,27,28))
-pl <- autoplot(ir,fill=brewer.pal(n=length(ir),"Set1"))+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+              end=c(15,11,13,18,26,27,28))
+pl <- autoplot(ir,fill=brewer.pal(n=length(ir),"Set1"))+ geom_vline(x=seq(1,40,by=1),lty=2)
 library(gridExtra)
 pl
 ```
@@ -138,7 +138,7 @@ pl
 library(IRanges)
 ir <- IRanges(
 start = c(7,9,12,14,22:24), 
-end=c(15,11,12,18,26,27,28))
+end=c(15,11,13,18,26,27,28))
 str(ir)
 ```
 
@@ -240,7 +240,7 @@ shift(ir, 5)
 
 
 ```{r echo=FALSE}
-p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
+p2 <- autoplot(shift(ir,5),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 ```
 
@@ -256,7 +256,7 @@ shift(ir, 7:1)
 ## Shifting
 
 ```{r echo=FALSE}
-p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1"))+geom_vline(x=seq(1,40,by=1),lty=2)+ xlim(5,40)
+p2 <- autoplot(shift(ir,7:1),fill=brewer.pal(n=length(ir),"Set1"))+geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 ```
 
@@ -271,7 +271,7 @@ resize(ir,3)
 ## Resize
 
 ```{r echo=FALSE}
-p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+p2 <- autoplot(resize(ir,3),fill=brewer.pal(n=length(ir),"Set1")) + geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 ```
 
@@ -284,7 +284,7 @@ resize(ir,3,fix="end")
 ## Resize
 
 ```{r echo=FALSE}
-p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2)
+p2 <- autoplot(resize(ir,3,fix="end"),fill=brewer.pal(n=length(ir),"Set1")) +geom_vline(x=seq(1,40,by=1),lty=2)
 tracks(pl, p2)
 ```
 
@@ -328,7 +328,7 @@ ir3
 ## Overlaps
 
 ```{r echo=FALSE}
-p2 <- autoplot(ir3) + xlim(5,40)
+p2 <- autoplot(ir3)
 tracks(pl,p2)
 
 ```
@@ -377,12 +377,12 @@ subject[subjectHits(ov)[1]]
 fll <- rep("white", length(ir))
 fll[queryHits(ov)[1]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(ov)[1]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -398,12 +398,12 @@ subject[subjectHits(ov)[2]]
 fll <- rep("white", length(ir))
 fll[queryHits(ov)[2]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(ov)[2]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -419,12 +419,12 @@ subject[subjectHits(ov)[3]]
 fll <- rep("white", length(ir))
 fll[queryHits(ov)[3]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(ov)[3]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -459,12 +459,12 @@ fo <- findOverlaps(query,subject,type="within")
 fll <- rep("white", length(ir))
 fll[queryHits(fo)[1]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(fo)[1]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -482,12 +482,12 @@ fo <- findOverlaps(query,subject,type="within")
 fll <- rep("white", length(ir))
 fll[queryHits(fo)[2]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(fo)[2]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) + geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -505,12 +505,12 @@ fo <- findOverlaps(query,subject,type="within")
 fll <- rep("white", length(ir))
 fll[queryHits(fo)[3]] <- "black"
 
-qplot <- autoplot(ir,fill=fll)+ xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
+qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
 
 fll <- rep("white", length(ir3))
 fll[subjectHits(fo)[3]] <- "black"
 
-subplot <- autoplot(ir3,fill=fll) + xlim(5,40)+geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
+subplot <- autoplot(ir3,fill=fll) + geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
@@ -544,12 +544,6 @@ p2 <- autoplot(setdiff(ir,ir3))
 tracks(pl,pl2,p2)
 
 ```
-
-
-## Intermission
-
-Work through section 1 of the practical
-
 
 # Core data-type 1: DNA sequences
 
@@ -772,7 +766,26 @@ hg19 <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
 hg19
 ```
 
+## Chromosome-level sequence
+
+- The genome package can be accessed at a chromosome level
+- The `names` of the object are chromosome names
+    + can use list accessing method `[[]]` to get chromsome sequence
+    + result is a `DNAString`
+        + which we have various tools for dealing with
+        
+```{r}
+head(names(hg19))
+chrX <- hg19[["chrX"]]
+chrX
+alphabetFrequency(chrX,baseOnly=TRUE)
+```
+
+
 ## Retrieving sequences
+
+- Of course, we might just want the sequence of a particular region (e.g. gene)
+- we can use `getSeq` to do this
 
 ```{r}
 tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
@@ -780,7 +793,6 @@ tp53
 as.character(tp53)
 alphabetFrequency(tp53,baseOnly=TRUE)
 subseq(tp53, 1000,1010)
-
 ```
 
 ## Timings
@@ -794,7 +806,7 @@ system.time(tp53 <- getSeq(hg19, "chr17", 7577851, 7598063))
 
 ## Manipulating sequences
 
-We can now use Biostrings operations to manipulate the sequence
+We can now use `Biostrings` operations to manipulate the sequence
 
 ```{r}
 translate(subseq(tp53, 1000,1010))
@@ -832,7 +844,11 @@ tp53
 
 ## Intermission
 
-Work through section 2 of the practical
+Work through section 1 of the practical
+
+- Examples of creating `IRanges` and `GRanges` objects
+- Accessing genome packages
+- Manipulating genome sequences
 
 
 
@@ -844,8 +860,10 @@ Work through section 2 of the practical
 
 
 We will assume that the sequencing reads have been aligned and that we are interested in processing the alignments. 
+
 - `Rsamtools` provides an interface for doing this. 
 - However, we will use the `readGAlignments` tool in `GenomicAlignments` which extracts the essential information from the bam file.
+    - don't even attempt to try to understand the data structure!
 
 ```{r echo=FALSE}
 suppressPackageStartupMessages(library(pasillaBamSubset))
@@ -857,40 +875,59 @@ options(width=60)
 
 ```{r message=FALSE}
 library(GenomicAlignments)
-bam <- readGAlignments(mybam,use.name=TRUE)
-
+bam <- readGAlignments(mybam,use.names = TRUE)
+str(bam)
 ```
 - `use.name` uses the read names as identifiers.
 - it can be quicker to say `use.name=FALSE`
 
 ## Representation of aligned reads
-The result looks a lot like a GRanges object. In fact, a lot of the same operations can be uses
+The result looks a lot like a GRanges object. In fact, a lot of the same operations can be used
 
 ```{r}
 bam
+
 ```
+
+## Accessing particular reads
+
+- Yet again, we can treat the object as a vector
+
+```{r}
+length(bam)
+bam[1:5]
+bam[sample(1:length(bam),5)]
+```
+
+
 
 ## Querying alignments
 
+- As usual, there are a variety of accessor functions to get data from the object
 ```{r}
 table(strand(bam))
 summary(width(bam))
 range(start(bam))
-cigar(bam)[1:10]
+head(cigar(bam))
 ```
 
 ## Manipulation of reads
-
 
 The aligned reads can be manipulated using functions from IRanges
 
 ```{r}
 shift(ranges(bam),10)
+resize(ranges(bam),30)
+```
 
+## Calculating coverage
+
+```{r}
 flank(ranges(bam),100,both=T)
 coverage(ranges(bam))
 
 ```
+
 
 ## Region subset - the naive way
 
@@ -902,13 +939,51 @@ bam[start(bam) < 20100 & end(bam) > 20000]
 
 ## The smart way
 
+- A `GAlignments` object can be used in `findOverlaps`
 ```{r}
 gr <- GRanges("chr4", IRanges(start = 20000, end = 20100))
 gr
 findOverlaps(gr,bam)
-bam[subjectHits(findOverlaps(gr,bam))]
-
 ```
+
+
+## Identifying the reads
+
+```{r}
+bam[subjectHits(findOverlaps(gr,bam))]
+```
+
+## Identifying the reads
+
+
+```{r echo=FALSE}
+morereads <- bam[subjectHits(findOverlaps(flank(gr,130,both=TRUE),bam))]
+subreads <- bam[subjectHits(findOverlaps(gr,bam))]
+fll <- rep("white", length(morereads))
+Overlap <-names(morereads) %in% names(subreads)
+rname <- 1:length(morereads)
+tracks(autoplot(gr),autoplot(morereads, aes(fill=Overlap,labels=rname)))
+```
+
+## Take care over argument order
+```{r}
+bam[subjectHits(findOverlaps(gr,bam,type="within"))]
+```
+
+```{r}
+bam[subjectHits(findOverlaps(bam,gr,type="within"))]
+```
+
+
+```{r echo=FALSE,fig.height=3}
+morereads <- bam[subjectHits(findOverlaps(flank(gr,130,both=TRUE),bam))]
+subreads <- bam[queryHits(findOverlaps(bam,gr,type="within"))]
+fll <- rep("white", length(morereads))
+Overlap <-names(morereads) %in% names(subreads)
+rname <- 1:length(morereads)
+tracks(autoplot(gr),autoplot(morereads, aes(fill=Overlap,labels=rname)))
+```
+
 
 ## A shortcut
 
@@ -918,32 +993,73 @@ bam.sub
 
 ```
 
+## Advanced overlapping
+
+```{r echo=FALSE}
+gr2 <- c(resize(shift(gr,-140),7),gr,resize(shift(gr,130),50))
+bam.sub <- bam[bam %over% gr2]
+```
+
 
 ## Chromosome naming conventions
-Sometimes (well, often) different naming conventions are used for chromosome names
+- Regrettably, people can't seem to agree on how to name chromosomes
+    + e.g. chr1 vs 1 etc
+- We have to make sure to use the same convention if attempted to overlap
 
 ```{r}
-seqlevels(gr)
-```
-
-```{r}
-gr <- renameSeqlevels(gr, c(A = "chr1", B="chr2"))
+gr <- GRanges("4", IRanges(start = 20000, end = 20100))
 gr
+findOverlaps(gr,bam)
+```
 
+## Solution
+
+```{r}
+gr
+gr <- renameSeqlevels(gr, c("4"="chr4"))
+gr
+```
+
+## Finer-control over reading
+
+- `readGAlignments` uses the `Rsamtools` interface, which allows more control over how we import data
+    + the '`ScanBamParam` (!) function allows the user to customise what fields from the bam file are imported
+        + recall yesterday's discussion about bam file contents
+        
+```{r eval=FALSE} 
+?ScanBamParam
+```
+
+## Example: adding mapping quality, base quality and flag
+
+```{r}
+bam.extra <- readGAlignments(file=mybam,param=ScanBamParam(what=c("mapq","qual","flag")))
+bam.extra[1:5]
+table(mcols(bam.extra)$flag)
+```
+
+## Example: Dealing with PCR duplicates
+
+```{r}
+dupReads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = TRUE)))
+nodupReads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = FALSE)))
+allreads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = NA)))
+length(dupReads)
+length(nodupReads)
+length(allreads)
+length(allreads) - length(dupReads)
 ```
 
 
-## More control over reading
+## Reading a particular region
 
-- `readGAlignments`
-Quicker still, we can get the reads directly from the bam file. The region to be read can be specified using the `param` argument.
+- Only possible if the bam file has an accompanying *bai* index file
 
 ```{r}
-system.time(bam.sub <-
-readGAlignments(file=mybam,
-use.names=TRUE, 
-param=ScanBamParam(which=gr)))
-
+bam.sub2 <-
+  readGAlignments(file=mybam,param=ScanBamParam(which=gr),use.names = TRUE)
+length(bam.sub2)
+bam.sub2
 ```
 
 ## Recap
@@ -956,4 +1072,4 @@ param=ScanBamParam(which=gr)))
 - The genome can also be accessed using Ranges
 
 
-Now, work through Section 3 of the practical
+Now, work through Section 2 of the practical
