@@ -532,9 +532,9 @@ width(myseq)
 head(as.character(myseq))
 ```
 
+## Accessor functions
 
-
-This expression can be put inside the `[]` to extract the elements that we want
+What does this do?
 ```{r}
 myseq[width(myseq)>19]
 ```
@@ -773,7 +773,7 @@ head(cigar(bam))
 ```
 
 
-## Overlaps reads with GRanges
+## Overlap aligned reads with GRanges
 
 - A `GAlignments` object can be used in `findOverlaps`
 ```{r}
@@ -783,11 +783,6 @@ findOverlaps(gr,bam)
 ```
 
 
-## Identifying the reads
-
-```{r}
-bam[subjectHits(findOverlaps(gr,bam))]
-```
 
 ## Identifying the reads
 
