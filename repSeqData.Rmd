@@ -652,7 +652,7 @@ alphabetFrequency(chrX,baseOnly=TRUE)
 ```{r}
 tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
 tp53
-as.character(tp53)
+as.character(tp53[1:10])
 alphabetFrequency(tp53,baseOnly=TRUE)
 subseq(tp53, 1000,1010)
 ```
