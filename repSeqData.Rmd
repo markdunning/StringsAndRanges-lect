@@ -110,6 +110,17 @@ str(ir)
 ir
 ```
 
+## Adding metadata
+
+We can give our ranges names
+```{r}
+ir <- IRanges(
+start = c(7,9,12,14,22:24), 
+end=c(15,11,13,18,26,27,28),names=LETTERS[1:7])
+ir
+```
+
+
 ## Ranges as vectors
 - `IRanges` can be treated as if they were *vectors*
     + no new rules to learn
@@ -256,7 +267,7 @@ e.g. counting
 
 ```{r}
 ir3 <- IRanges(start = c(1, 14, 27), end = c(13,
-    18, 30))
+    18, 30),names=c("X","Y","Z"))
 ir3
 
 ```
@@ -285,7 +296,7 @@ ov <- findOverlaps(query, subject)
 ov
 ```
 
-## queryHits
+## queryHits and subjectHits
 
 - `queryHits` returns *indices* from the ***query***
     + each query may overlap with many in the subject
@@ -683,12 +694,28 @@ reverseComplement(subseq(tp53, 1000,2000))
     + referred to as seqnames
 - we have the option to define a strand
 - need to supply a ranges object, as we saw before
+- operations on ranges respect the chromosome labels
 
 ```{r message=FALSE}
 library(GenomicRanges)
 gr <- GRanges(c("A","A","A","B","B","B","B"), ranges=ir)
 gr
 ```
+
+
+## GRanges with metadata
+We can add extra metadata to these ranges
+
+- `mcols` can be set to be a data frame with one row for each range
+- Counts, gene names
+    + anything you like!
+
+```{r}
+mcols(gr) <- data.frame(Count = runif(length(gr)), Gene =sample(LETTERS,length(gr)))
+gr
+gr[mcols(gr)$Count > 0.5]
+```
+
 
 ## Representing a gene
 
