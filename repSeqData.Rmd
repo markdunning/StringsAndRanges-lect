@@ -491,7 +491,7 @@ tracks(pl,pl2,p2)
 
 ```
 
-# Core data-type 1: DNA sequences
+# Core data-type 2: DNA sequences
 
 
 
