@@ -437,7 +437,7 @@ subplot <- autoplot(ir3,fill=fll) + geom_vline(x=seq(1,40,by=1),lty=2,main="Subj
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
-## More strigent overlap
+## More stringent overlap
 
 
 ```{r}
