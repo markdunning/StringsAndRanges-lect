@@ -843,11 +843,20 @@ gr
 findOverlaps(gr,bam)
 ```
 
-## Solution
+## Solution(s)
 
 ```{r}
-gr
 gr <- renameSeqlevels(gr, c("4"="chr4"))
+gr
+```
+
+```{r echo=FALSE}
+gr <- GRanges("4", IRanges(start = 20000, end = 20100))
+
+```
+
+```{r}
+seqlevelsStyle(gr) <- "UCSC"
 gr
 ```
 
@@ -871,7 +880,12 @@ table(mcols(bam.extra)$flag)
 
 ## Example: Dealing with PCR duplicates
 
-```{r}
+```{r echo=FALSE}
+mybam <- "exampleData/HG00096.chr22.bam"
+```
+
+
+```{r cache=TRUE}
 dupReads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = TRUE)))
 nodupReads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = FALSE)))
 allreads <- readGAlignments(file=mybam,param=ScanBamParam(scanBamFlag(isDuplicate = NA)))
@@ -885,6 +899,11 @@ length(allreads) - length(dupReads)
 ## Reading a particular region
 
 - Only possible if the bam file has an accompanying *bai* index file
+
+```{r echo=FALSE}
+mybam <- untreated3_chr4()
+```
+
 
 ```{r}
 bam.sub2 <-

@@ -81,7 +81,7 @@ set.seed(0)
 suppressPackageStartupMessages(library(GenomicRanges))
 suppressPackageStartupMessages(library(GenomicAlignments))
 library(RColorBrewer)
-mybam <- "exampleData/NA19914.chr22.bam"
+mybam <- "exampleData/HG00096.chr22.bam"
 gr <- GRanges("22", IRanges(start = 33451818, end=33842866))
 bam.sub2 <- readGAlignments(file=mybam,use.names=TRUE, param=ScanBamParam(which=gr,what=c("seq","qual")))
 
@@ -115,7 +115,7 @@ strack <- SequenceTrack(Hsapiens, chromosome = "chr22",name="Genome")
 tracks <- reads
 tracks <- c(reads, strack)
 
-plotTracks(tracks,from=33451942,to=33452132)
+plotTracks(tracks)
 
 @
 
@@ -127,7 +127,7 @@ Often we are given the mapped location of reads
 <<echo=FALSE,fig=TRUE,dev='pdf',fig.width=11, fig.height=6>>=
 gtrack <- GenomeAxisTrack()
 tracks <- c(gtrack,reads, strack)
-plotTracks(tracks,from=33451942,to=33452132)
+plotTracks(tracks)
 @
 
 Need a way of representing alignments and associated qualities
@@ -144,7 +144,7 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 genetrack <- GeneRegionTrack(txdb, chromosome="chr22",start = 33450942,end=33454332)
 tracks <- c(gtrack, reads, genetrack)
 
-plotTracks(tracks, from=33450942,to=33454332)
+plotTracks(tracks)
 
 @
 
