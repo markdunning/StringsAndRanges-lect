@@ -160,13 +160,6 @@ width(ir) == 5
 ir[width(ir)==5]
 ```
 
-## More-complex subsetting
-
-```{r}
-start(ir) > 10
-end(ir) < 27
-ir[start(ir) > 10]
-```
 
 ## More-complex subsetting
 
@@ -332,7 +325,7 @@ subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2) + ggtitle(
 tracks(qplot, subplot,main="Query (above) and Subject (below)")  
 ```
 
-## Overlap example - second hit
+## Overlap example - Second hit
 
 ```{r}
 query[queryHits(ov)[2]]
@@ -389,76 +382,6 @@ countOverlaps(query,subject)
 countOverlaps(subject,query)
 ```
 
-
-## Modify overlap criteria
-
-- There are various ways of defining an overlap
-- We can be more stringent by stating that all positions need to be in common
-```{r}
-findOverlaps(query,subject,type="within")
-```
-
-
-```{r echo=FALSE,fig.height=3}
-fo <- findOverlaps(query,subject,type="within")
-
-fll <- rep("white", length(ir))
-fll[queryHits(fo)[1]] <- "black"
-
-qplot <- autoplot(ir,fill=fll)+geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
-
-fll <- rep("white", length(ir3))
-fll[subjectHits(fo)[1]] <- "black"
-
-subplot <- autoplot(ir3,fill=fll) +geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
-tracks(qplot, subplot,main="Query (above) and Subject (below)")  
-```
-
-
-## More stringent overlap
-
-```{r}
-findOverlaps(query,subject,type="within")
-```
-
-
-```{r echo=FALSE,fig.height=3}
-fo <- findOverlaps(query,subject,type="within")
-
-fll <- rep("white", length(ir))
-fll[queryHits(fo)[2]] <- "black"
-
-qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
-
-fll <- rep("white", length(ir3))
-fll[subjectHits(fo)[2]] <- "black"
-
-subplot <- autoplot(ir3,fill=fll) + geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
-tracks(qplot, subplot,main="Query (above) and Subject (below)")  
-```
-
-## More stringent overlap
-
-
-```{r}
-findOverlaps(query,subject,type="within")
-```
-
-
-```{r echo=FALSE,fig.height=3}
-fo <- findOverlaps(query,subject,type="within")
-
-fll <- rep("white", length(ir))
-fll[queryHits(fo)[3]] <- "black"
-
-qplot <- autoplot(ir,fill=fll)+ geom_vline(x=seq(1,40,by=1),lty=2,main="Query") + ggtitle("Query")
-
-fll <- rep("white", length(ir3))
-fll[subjectHits(fo)[3]] <- "black"
-
-subplot <- autoplot(ir3,fill=fll) + geom_vline(x=seq(1,40,by=1),lty=2,main="Subject") + ggtitle("Subject")
-tracks(qplot, subplot,main="Query (above) and Subject (below)")  
-```
 
 
 ## Intersection
@@ -543,12 +466,6 @@ width(myseq)
 head(as.character(myseq))
 ```
 
-## Accessor functions
-
-What does this do?
-```{r}
-myseq[width(myseq)>19]
-```
 
 
 ## More advanced subsetting
@@ -586,21 +503,6 @@ translate(myseq)
 
 ```
 
-
-
-## Fastq recap
-
-```{r echo=FALSE}
-path.to.my.fastq <- "exampleData//subset.fq"
-```
-
-Recall that sequence reads are represented in text format
-
-```{r eval=FALSE}
-readLines(path.to.my.fastq ,n=10)
-```
-
-It should be possible to represent these as `Biostrings` objects
 
 ## The `ShortRead` package
 One of the first NGS packages in Bioconductor
@@ -663,9 +565,17 @@ alphabetFrequency(chrX,baseOnly=TRUE)
 ```{r}
 tp53 <- getSeq(hg19, "chr17", 7577851, 7590863)
 tp53
-as.character(tp53[1:10])
 alphabetFrequency(tp53,baseOnly=TRUE)
 subseq(tp53, 1000,1010)
+```
+
+## Manipulating sequences
+
+We can now use `Biostrings` operations to manipulate the sequence
+
+```{r}
+translate(subseq(tp53, 1000,1010))
+reverseComplement(subseq(tp53, 1000,2000))
 ```
 
 ## Timings
@@ -677,14 +587,6 @@ Don't need to load the whole genome into memory, so reading a particular sequenc
 system.time(tp53 <- getSeq(hg19, "chr17", 7577851, 7598063))
 ```
 
-## Manipulating sequences
-
-We can now use `Biostrings` operations to manipulate the sequence
-
-```{r}
-translate(subseq(tp53, 1000,1010))
-reverseComplement(subseq(tp53, 1000,2000))
-```
 
 
 ## Introducing GRanges
@@ -784,7 +686,6 @@ bam
 ```{r}
 length(bam)
 bam[1:5]
-bam[sample(1:length(bam),5)]
 ```
 
 
